@@ -2,8 +2,10 @@
 #include "RoguelikeMap.h"
 #include "RoguelikeMapBlock.h"
 #include "MapDefinitions.h"
+#include "Roguelike/Character/Component/GridMovementComponent.h"
 
 #include "Roguelike/RoguelikePlayerController.h"
+#include "Roguelike/RoguelikeCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -24,10 +26,16 @@ void ARoguelikeMap::BeginPlay()
 
 	CreateNewMap();
 
-	//auto* RoguelikePlayer = Cast<ARoguelikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	//RoguelikePlayer->SetRoguelikeMap(this);
+	//auto* RoguelikePlayerController = Cast<ARoguelikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	//RoguelikePlayerController->SetRoguelikeMap(this);
 
-	//RoguelikePlayer->SetOnGrid(5, 5);
+	//RoguelikePlayerController->SetOnGrid(5, 5);
+
+	auto* RoguelikePlayer = Cast<ARoguelikeCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	auto* GridMovementComponent = RoguelikePlayer->GetGridMovementComponent();
+	GridMovementComponent->SetRoguelikeMap(this);
+	GridMovementComponent->SetOnGrid(5, 5);
+	GridMovementComponent->TraceTo(17, 10);
 }
 
 // Called every frame
@@ -47,13 +55,13 @@ void ARoguelikeMap::CreateNewMap()
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+		{ 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+		{ 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1 },
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
 		{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -63,10 +71,15 @@ void ARoguelikeMap::CreateNewMap()
 		{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 	};
 
+	Map.AddUninitialized(Height * Width);
+	CollisionMap.AddUninitialized(Height * Width);
+	FMemory::Memcpy(Map.GetData(), Maps, Height * Width * sizeof(int32));
+	FMemory::Memcpy(CollisionMap.GetData(), Maps, Height * Width * sizeof(int32));
+
 	MapWidth = Width;
 	MapHeight = Height;
 
-	const int32 BlockWidth = MapDefinitions::GridSize, BlockHeight = MapDefinitions::GridSize;
+	const float BlockWidth = MapDefinitions::GridSize, BlockHeight = MapDefinitions::GridSize;
 	const int32 AmountWidth = (Width * BlockWidth) * .5f, AmountHeight = (Height * BlockHeight) * .5f;
 
 	for (int32 y = 0; y < Height; ++y)
@@ -90,3 +103,8 @@ FVector ARoguelikeMap::GetLocationOnGrid(int X, int Y) const
 	return Blocks[Index]->GetActorLocation();
 }
 
+bool ARoguelikeMap::CanPass(const int X, const int Y)
+{
+	const int Index = (MapWidth * Y) + X;
+	return CollisionMap[Index] == 0;
+}

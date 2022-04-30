@@ -33,6 +33,10 @@ public:
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
+	uint32 bMoveUp : 1;
+	uint32 bMoveDown : 1;
+	uint32 bMoveLeft : 1;
+	uint32 bMoveRight : 1;
 
 	// Begin PlayerController interface
 	virtual void PlayerTick(float DeltaTime) override;
@@ -40,6 +44,15 @@ protected:
 	// End PlayerController interface
 
 	/** Input handlers for SetDestination action. */
+	void OnPressedUp();
+	void OnPressedDown();
+	void OnPressedLeft();
+	void OnPressedRight();
+	void OnReleasedUp();
+	void OnReleasedDown();
+	void OnReleasedLeft();
+	void OnReleasedRight();
+
 	void OnSetDestinationPressed();
 	void OnSetDestinationReleased();
 	void OnTouchPressed(const ETouchIndex::Type FingerIndex, const FVector Location);
@@ -50,6 +63,11 @@ private:
 	bool bIsTouch; // Is it a touch device
 	float FollowTime; // For how long it has been pressed
 	class ARoguelikeMap* RoguelikeMap;
+	int32 MapX;
+	int32 MapY;
+	FVector LastLocation;
+	FVector NextLocation;
+	uint32 IsMoving : 1;
 };
 
 

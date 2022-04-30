@@ -21,6 +21,12 @@ public:
 	void CreateNewMap();
 
 	FVector GetLocationOnGrid(int X, int Y) const;
+	bool CanPass(int X, int Y);
+
+	const TArray<uint32>& GetMap() const { return Map; }
+	const TArray<uint32>& GetCollisionMap() const { return CollisionMap; }
+	int32 GetWidth() const { return MapWidth; }
+	int32 GetHeight() const { return MapHeight; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,4 +40,6 @@ private:
 	TArray<class ARoguelikeMapBlock*> Blocks;
 	int32 MapWidth;
 	int32 MapHeight;
+	TArray<uint32> Map;
+	TArray<uint32> CollisionMap;
 };
