@@ -23,6 +23,9 @@ public:
 	// Sets default values for this actor's properties
 	ARoguelikeMapBlock();
 
+	void SetHighlight();
+	void ResetMaterial();
+
 	/** Grid that owns us */
 	class RoguelikeMap* OwningMap;
 

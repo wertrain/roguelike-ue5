@@ -10,7 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
-#include "Roguelike/Character/Component/GridMovementComponent.h"
+#include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
 
 ARoguelikeCharacter::ARoguelikeCharacter()
 {
@@ -42,13 +42,20 @@ ARoguelikeCharacter::ARoguelikeCharacter()
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Create a movement...
-	GridMovementComponent = CreateDefaultSubobject<UGridMovementComponent>(TEXT("GridMovementComponent"));
+	RoguelikeMovementComponent = CreateDefaultSubobject<URoguelikeMovementComponent>(TEXT("RoguelikeMovementComponent"));
 	//GridMovementComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	//TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+}
+
+void ARoguelikeCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	RoguelikeMovementComponent->SetPoint(FIntPoint(5, 5));
 }
 
 void ARoguelikeCharacter::Tick(float DeltaSeconds)

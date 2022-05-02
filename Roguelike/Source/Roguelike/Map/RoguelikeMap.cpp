@@ -2,7 +2,6 @@
 #include "RoguelikeMap.h"
 #include "RoguelikeMapBlock.h"
 #include "MapDefinitions.h"
-#include "Roguelike/Character/Component/GridMovementComponent.h"
 
 #include "Roguelike/RoguelikePlayerController.h"
 #include "Roguelike/RoguelikeCharacter.h"
@@ -25,17 +24,6 @@ void ARoguelikeMap::BeginPlay()
 	Super::BeginPlay();
 
 	CreateNewMap();
-
-	//auto* RoguelikePlayerController = Cast<ARoguelikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	//RoguelikePlayerController->SetRoguelikeMap(this);
-
-	//RoguelikePlayerController->SetOnGrid(5, 5);
-
-	auto* RoguelikePlayer = Cast<ARoguelikeCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	auto* GridMovementComponent = RoguelikePlayer->GetGridMovementComponent();
-	GridMovementComponent->SetRoguelikeMap(this);
-	GridMovementComponent->SetOnGrid(5, 5);
-	GridMovementComponent->TraceTo(17, 10);
 }
 
 // Called every frame
@@ -107,4 +95,23 @@ bool ARoguelikeMap::CanPass(const int X, const int Y)
 {
 	const int Index = (MapWidth * Y) + X;
 	return CollisionMap[Index] == 0;
+}
+
+void ARoguelikeMap::SetHighlight(TArray<FIntPoint> Points)
+{
+	ResetHighlight();
+
+	for (auto& Point : Points)
+	{
+		const int Index = (MapWidth * Point.Y) + Point.X;
+		Blocks[Index]->SetHighlight();
+	}
+}
+
+void ARoguelikeMap::ResetHighlight()
+{
+	for (auto& Block : Blocks)
+	{
+		Block->ResetMaterial();
+	}
 }

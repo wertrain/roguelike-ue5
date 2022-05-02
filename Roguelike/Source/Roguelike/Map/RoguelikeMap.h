@@ -23,6 +23,9 @@ public:
 	FVector GetLocationOnGrid(int X, int Y) const;
 	bool CanPass(int X, int Y);
 
+	void SetHighlight(TArray<FIntPoint> Points);
+	void ResetHighlight();
+
 	const TArray<uint32>& GetMap() const { return Map; }
 	const TArray<uint32>& GetCollisionMap() const { return CollisionMap; }
 	int32 GetWidth() const { return MapWidth; }

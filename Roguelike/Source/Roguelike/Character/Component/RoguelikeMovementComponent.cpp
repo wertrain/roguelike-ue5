@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GridMovementComponent.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "RoguelikeMovementComponent.h"
+#include "Math/UnrealMathUtility.h"
+#include "Kismet/GameplayStatics.h"
 #include "Algo/Reverse.h"
 
 #include "Roguelike/Map/RoguelikeMap.h"
@@ -10,7 +11,7 @@
 namespace
 {
 
-void Dijkstra(const ARoguelikeMap& Map, const GridPoint& Start, const GridPoint& Goal, TQueue<GridPoint>& OutQueue)
+void Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint& Goal, TQueue<FIntPoint>& OutQueue)
 {
 	struct Node
 	{
@@ -43,7 +44,7 @@ void Dijkstra(const ARoguelikeMap& Map, const GridPoint& Start, const GridPoint&
 
 	TArray<Node*> SearchNodeList;
 
-	int X = Start.GetX(), Y = Start.GetY();
+	int X = Start.X, Y = Start.Y;
 	auto* StartNode = &NodeMap[(MapWidth * Y) + X];
 	StartNode->Score = 0;
 	SearchNodeList.Add(StartNode);
@@ -80,6 +81,7 @@ void Dijkstra(const ARoguelikeMap& Map, const GridPoint& Start, const GridPoint&
 		Node->Checked = true;
 	}
 
+#if false
 	FString DebugMap;
 	for (int y = 0; y < MapHeight; ++y)
 	{
@@ -92,10 +94,11 @@ void Dijkstra(const ARoguelikeMap& Map, const GridPoint& Start, const GridPoint&
 		DebugMap.Append(TEXT("\n"));
 	}
 	UE_LOG(LogTemp, Log, TEXT("%s"), *DebugMap);
+#endif
 
 	OutQueue.Empty();
 	{
-		auto* GoalNode = &NodeMap[(MapWidth * Goal.GetY()) + Goal.GetX()];
+		auto* GoalNode = &NodeMap[(MapWidth * Goal.Y) + Goal.X];
 		TArray<Node*> TraceNodes;
 
 		Node* CheckNode = GoalNode;
@@ -108,65 +111,106 @@ void Dijkstra(const ARoguelikeMap& Map, const GridPoint& Start, const GridPoint&
 		Algo::Reverse(TraceNodes);
 		for (auto* Node : TraceNodes)
 		{
-			UE_LOG(LogTemp, Log, TEXT("%d %d"), Node->X, Node->Y);
-			OutQueue.Enqueue(GridPoint(Node->X, Node->Y));
+			OutQueue.Enqueue(FIntPoint(Node->X, Node->Y));
 		}
 	}
 }
 
 }
 
-UGridMovementComponent::UGridMovementComponent()
+URoguelikeMovementComponent::URoguelikeMovementComponent()
+	: MoveSpeed(10.0f)
+	, RotateSpeed(5.0f)
+	, RoguelikeMap(nullptr)
+	, CurrentPoint()
+	, NextPoint()
+	, CurrentLocation()
+	, NextLocation()
+	, States()
+	, TracePoints()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	States.Value = 0;
 }
 
-void UGridMovementComponent::SetRoguelikeMap(class ARoguelikeMap* Map)
+void URoguelikeMovementComponent::SetRoguelikeMap(class ARoguelikeMap* Map)
 {
 	RoguelikeMap = Map;
 }
 
-void UGridMovementComponent::SetOnGrid(int X, int Y)
+void URoguelikeMovementComponent::SetOnGrid(int32 X, int32 Y)
+{
+	SetPoint(FIntPoint(X, Y));
+}
+
+void URoguelikeMovementComponent::SetPoint(const FIntPoint Point)
 {
 	check(RoguelikeMap != nullptr);
-	
+
 	if (APawn* const Pawn = GetPawnOwner())
 	{
-		CurrentPoint = GridPoint(X, Y);
+		CurrentPoint = Point;
 
-		const auto NewLocation = RoguelikeMap->GetLocationOnGrid(X, Y) + (FVector::UpVector * MapDefinitions::GridSize);
+		auto NewLocation = RoguelikeMap->GetLocationOnGrid(Point.X, Point.Y);
+		NewLocation.Z = GetActorLocation().Z;
 		CurrentLocation = NewLocation;
 		NextLocation = NewLocation;
 		Pawn->SetActorLocation(NewLocation);
 	}
 }
 
-void UGridMovementComponent::MoveTo(const int X, const int Y)
+FIntPoint URoguelikeMovementComponent::GetPoint() const
 {
-	NextPoint = GridPoint(X, Y);
+	return CurrentPoint;
+}
+
+void URoguelikeMovementComponent::MoveTo(const int32 X, const int32 Y)
+{
+	NextPoint = FIntPoint(X, Y);
 	NextLocation = RoguelikeMap->GetLocationOnGrid(X, Y);
+	NextLocation.Z = GetActorLocation().Z;
 	States.Flags.IsMoving = true;
 }
 
-void UGridMovementComponent::TraceTo(const int X, const int Y)
+void URoguelikeMovementComponent::MoveToPoint(const FIntPoint Point)
 {
-	NextPoint = GridPoint(X, Y);
+	MoveTo(Point.X, Point.Y);
+}
+
+void URoguelikeMovementComponent::TraceTo(const int32 X, const int32 Y)
+{
+	NextPoint = FIntPoint(X, Y);
 	Dijkstra(*RoguelikeMap, CurrentPoint, NextPoint, TracePoints);
 	States.Flags.IsTracing = true;
 
 	// 最初の移動先を設定
-	GridPoint Point;
+	FIntPoint Point;
 	if (TracePoints.Dequeue(Point))
 	{
 		if (TracePoints.Dequeue(Point))
 		{
-			MoveTo(Point.GetX(), Point.GetY());
+			MoveTo(Point.X, Point.Y);
 		}
 	}
 }
 
-bool UGridMovementComponent::MoveByInput(const bool bLeft, const bool bRight, const bool bUp, const bool bDown)
+void URoguelikeMovementComponent::TraceToPoint(const FIntPoint Point)
+{
+	TraceTo(Point.X, Point.Y);
+}
+
+void URoguelikeMovementComponent::TraceToPointEx(const FIntPoint Point, const FOnArrivedDelegate& Callback)
+{
+	TraceToPoint(Point);
+	TraceArrivedDelegate = Callback;
+}
+
+bool URoguelikeMovementComponent::IsMoving() const
+{
+	return States.Flags.IsMoving;
+}
+
+bool URoguelikeMovementComponent::MoveByInput(const bool bLeft, const bool bRight, const bool bUp, const bool bDown)
 {
 	if (APawn* const Pawn = GetPawnOwner())
 	{
@@ -203,7 +247,7 @@ bool UGridMovementComponent::MoveByInput(const bool bLeft, const bool bRight, co
 			// 入力を最後に受け付けた位置
 			CurrentLocation = Location;
 
-			int NextX = CurrentPoint.GetX(), NextY = CurrentPoint.GetY();
+			int NextX = CurrentPoint.X, NextY = CurrentPoint.Y;
 
 			if (bLeft)
 			{
@@ -234,17 +278,60 @@ bool UGridMovementComponent::MoveByInput(const bool bLeft, const bool bRight, co
 	return false;
 }
 
-FVector UGridMovementComponent::GetNextLocation() const
+FVector URoguelikeMovementComponent::GetNextLocation() const
 {
 	return NextLocation;
 }
 
-void UGridMovementComponent::BeginPlay()
+ARoguelikeMap* URoguelikeMovementComponent::GetRoguelikeMap() const
 {
-	Super::BeginPlay();
+	return RoguelikeMap;
 }
 
-void UGridMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void URoguelikeMovementComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	if ((RoguelikeMap = Cast<ARoguelikeMap>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoguelikeMap::StaticClass()))) == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s - RoguelikeMap is not found."), *GetOwner()->GetName());
+	}
+}
+
+void URoguelikeMovementComponent::OnComponentCreated()
+{
+	Super::OnComponentCreated();
+
+	if ((RoguelikeMap = Cast<ARoguelikeMap>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoguelikeMap::StaticClass()))) == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s - RoguelikeMap is not found."), *GetOwner()->GetName());
+	}
+	//check(RoguelikeMap != nullptr);
+}
+
+void URoguelikeMovementComponent::AddInputVector(FVector WorldVector, bool bForce)
+{
+	if (APawn* const Pawn = GetPawnOwner())
+	{
+		if (bForce || Pawn->IsMoveInputIgnored())
+		{
+			auto Location = Pawn->GetActorLocation();
+			Velocity = (WorldVector * MoveSpeed);
+			Location = Location + Velocity;
+			Pawn->SetActorLocation(Location);
+			FRotator MovementRotation = WorldVector.Rotation();
+			Pawn->SetActorRotation(FMath::RInterpTo(Pawn->GetActorRotation(), MovementRotation, GetWorld()->GetDeltaSeconds(), RotateSpeed));
+		}
+	}
+}
+
+void URoguelikeMovementComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	SetOnGrid(5, 5);
+}
+
+void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -260,11 +347,11 @@ void UGridMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 				// 次の移動先が遠すぎる場合は移動させない
 				if (FVector::Distance(NextLocation, Location) < MapDefinitions::GridSize * 2.0f)
 				{
-					GridPoint Point;
+					FIntPoint Point;
 					if (TracePoints.Dequeue(Point))
 					{
 						CurrentPoint = NextPoint;
-						MoveTo(Point.GetX(), Point.GetY());
+						MoveTo(Point.X, Point.Y);
 					}
 					else
 					{
@@ -277,33 +364,28 @@ void UGridMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	if (States.Flags.IsMoving)
 	{
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), NextLocation);
-
 		if (APawn* const Pawn = GetPawnOwner())
 		{
 			// 移動方向
 			FVector WorldDirection = (NextLocation - Pawn->GetActorLocation()).GetSafeNormal();
-			Pawn->AddMovementInput(WorldDirection, 1.f, false);
+			Pawn->AddMovementInput(WorldDirection, 1.f, true);
 
 			const auto ActorLocation = Pawn->GetActorLocation();
 			// 移動終了チェック
-			auto CheckLocation = ActorLocation;
-			CheckLocation.Z = NextLocation.Z;
-			if (NextLocation.Equals(CheckLocation, MapDefinitions::GridSize * 0.1f))
+			if (NextLocation.Equals(ActorLocation, MapDefinitions::GridSize * 0.1f))
 			{
 				CurrentPoint = NextPoint;
 				CurrentLocation = ActorLocation;
 				States.Flags.IsMoving = false;
 
+				//TraceArrivedDelegate.ExecuteIfBound();
 				UE_LOG(LogTemp, VeryVerbose, TEXT("%s - [MOVE END]"), *Pawn->GetName());
 			}
 			else
 			{
-				UE_LOG(LogTemp, VeryVerbose, TEXT("%s - [MOVING] (%d, %d) : (%f, %f, %f)"), 
-					*Pawn->GetName(), NextPoint.GetX(), NextPoint.GetY(), NextLocation.X, NextLocation.Y, NextLocation.Z);
+				UE_LOG(LogTemp, VeryVerbose, TEXT("%s - [MOVING] (%d, %d) : (%f, %f, %f)"),
+					*Pawn->GetName(), NextPoint.X, NextPoint.Y, NextLocation.X, NextLocation.Y, NextLocation.Z);
 			}
 		}
 	}
-
 }
-

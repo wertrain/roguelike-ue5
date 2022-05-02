@@ -11,127 +11,39 @@
 
 #include "Map/RoguelikeMap.h"
 #include "Map/MapDefinitions.h"
-#include "Roguelike/Character/Component/GridMovementComponent.h"
+#include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
+#include "Roguelike/System/RoguelikeGameSubsystem.h"
 
 ARoguelikePlayerController::ARoguelikePlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
-	IsMoving = false;
-}
-
-void ARoguelikePlayerController::SetRoguelikeMap(class ARoguelikeMap* Map)
-{
-	RoguelikeMap = Map;
-}
-
-void ARoguelikePlayerController::SetOnGrid(int X, int Y)
-{
-	check(RoguelikeMap != nullptr);
-
-	APawn* const MyPawn = GetPawn();
-	if (MyPawn)
-	{
-		MapX = X;
-		MapY = Y;
-
-		MyPawn->SetActorLocation(RoguelikeMap->GetLocationOnGrid(X, Y) + (FVector::UpVector * MapDefinitions::GridSize));
-		LastLocation = MyPawn->GetActorLocation();
-		NextLocation = LastLocation;
-		//MyPawn->SetActorLocation(RoguelikeMap->GetLocationOnGrid(X, Y) + (FVector::UpVector * 30.0f));
-	}
 }
 
 void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	if (auto* RoguelikeCharacter = Cast<ARoguelikeCharacter>(GetCharacter()))
+	UGameInstance* GameInstance = GetGameInstance();
+	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
+
+	if (RoguelikeGameSubsystem->IsPlayerTurn())
 	{
-		if (auto* GridMovementComponent = RoguelikeCharacter->GetGridMovementComponent())
+		if (auto* RoguelikeCharacter = Cast<ARoguelikeCharacter>(GetCharacter()))
 		{
-			if (GridMovementComponent->MoveByInput(bMoveLeft, bMoveRight, bMoveUp, bMoveDown))
+			if (auto* RoguelikeMovementComponent = RoguelikeCharacter->GetRoguelikeMovementComponent())
 			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor,
-					GridMovementComponent->GetNextLocation() + (FVector::UpVector * (MapDefinitions::GridSize * 0.5f)),
-					FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+				if (RoguelikeMovementComponent->MoveByInput(bMoveLeft, bMoveRight, bMoveUp, bMoveDown))
+				{
+					RoguelikeGameSubsystem->StartStepAllPawns();
+
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor,
+						RoguelikeMovementComponent->GetNextLocation() - (FVector::UpVector * (MapDefinitions::GridSize * 0.5f)),
+						FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+				}
 			}
 		}
 	}
-
-#if false
-	// 操作可能かどうか
-	bool IsControl = false;
-	// プレイヤーの位置
-	const auto& CurrentLocation = GetPawn()->GetActorLocation();
-
-	if (IsMoving)
-	{
-		// 移動中もグリッドの半分以上移動していたら次の入力を受け付ける
-		if (FVector::Distance(LastLocation, CurrentLocation) > MapDefinitions::GridSize * 0.5f)
-		{
-			// 次の移動先が遠すぎる場合は移動させない
-			if (FVector::Distance(NextLocation, CurrentLocation) < MapDefinitions::GridSize * 2.0f)
-			{
-				IsControl = true;
-			}
-		}
-	}
-	else
-	{
-		IsControl = true;
-	}
-
-	if (IsControl)
-	{
-		if (bMoveLeft || bMoveRight || bMoveUp || bMoveDown)
-		{
-			// 入力を最後に受け付けた位置
-			LastLocation = CurrentLocation;
-
-			if (bMoveLeft) --MapX;
-			else if (bMoveRight) ++MapX;
-			else if (bMoveUp) --MapY;
-			else if (bMoveDown) ++MapY;
-
-			NextLocation = RoguelikeMap->GetLocationOnGrid(MapX, MapY);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, 
-				NextLocation + (FVector::UpVector * (MapDefinitions::GridSize * 0.5f)), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
-			IsMoving = true;
-		}
-	}
-
-	if (IsMoving)
-	{
-		FollowTime += DeltaTime;
-
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, NextLocation);
-
-		if (APawn* const MyPawn = GetPawn())
-		{
-			FVector WorldDirection = (NextLocation - MyPawn->GetActorLocation()).GetSafeNormal();
-			MyPawn->AddMovementInput(WorldDirection, 1.f, false);
-
-			auto ActorLocation = MyPawn->GetActorLocation();
-			ActorLocation.Z = NextLocation.Z;
-			if (NextLocation.Equals(ActorLocation, MapDefinitions::GridSize * 0.1f))
-			{
-				UE_LOG(LogTemp, Log, TEXT("MoveEnd"));
-				IsMoving = false;
-			}
-
-			UE_LOG(LogTemp, Log, TEXT("bMoveLeft (%d, %d) : (%f, %f, %f)"), MapX, MapY, MyPawn->GetActorLocation().X, MyPawn->GetActorLocation().Y, MyPawn->GetActorLocation().Z);
-		}
-	}
-	else
-	{
-		FollowTime = 0.f;
-	}
-
-#else
-
-
-#endif
 
 	if (bInputPressed)
 	{

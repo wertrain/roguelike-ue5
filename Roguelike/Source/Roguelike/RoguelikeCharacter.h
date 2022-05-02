@@ -14,7 +14,7 @@ class ARoguelikeCharacter : public ACharacter
 public:
 	ARoguelikeCharacter();
 
-	// Called every frame.
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
 	/** Returns TopDownCameraComponent subobject **/
@@ -22,7 +22,7 @@ public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns GridMovementComponent subobject */
-	FORCEINLINE class UGridMovementComponent* GetGridMovementComponent() const { return GridMovementComponent; }
+	FORCEINLINE class URoguelikeMovementComponent* GetRoguelikeMovementComponent() const { return RoguelikeMovementComponent; }
 private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -34,6 +34,6 @@ private:
 
 	/** Support for moving characters on the grid */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UGridMovementComponent* GridMovementComponent;
+	class URoguelikeMovementComponent* RoguelikeMovementComponent;
 };
 

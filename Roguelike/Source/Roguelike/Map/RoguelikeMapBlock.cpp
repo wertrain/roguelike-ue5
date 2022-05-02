@@ -16,10 +16,12 @@ ARoguelikeMapBlock::ARoguelikeMapBlock()
 		ConstructorHelpers::FObjectFinderOptional<UStaticMesh> BlockMesh;
 		ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> MaterialFloor;
 		ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> MaterialGrid;
+		ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> MaterialHighlight;
 		FConstructorStatics()
 			: BlockMesh(TEXT("/Game/Meshes/SM_Cube.SM_Cube"))
 			, MaterialFloor(TEXT("/Game/Materials/MI_BlockFloor.MI_BlockFloor"))
-			, MaterialGrid(TEXT("/Game/Materials/MI_BlockFloor.MI_BlockFloor"))
+			, MaterialGrid(TEXT("/Game/LevelPrototyping/Materials/MI_PrototypeGrid_Gray.MI_PrototypeGrid_Gray"))
+			, MaterialHighlight(TEXT("/Game/Materials/MI_BlockHighlight.MI_BlockHighlight"))
 			//, MaterialGrid(TEXT("/Game/LevelPrototyping/Materials/MI_PrototypeGrid_Gray.MI_PrototypeGrid_Gray"))
 		{
 		}
@@ -39,8 +41,19 @@ ARoguelikeMapBlock::ARoguelikeMapBlock()
 	//BlockMesh->SetMaterial(0, ConstructorStatics.MaterialFloor.Get());
 	BlockMesh->SetupAttachment(DummyRoot);
 
-	//Materials.Add(ConstructorStatics.MaterialGrid.Get());
-	//Materials.Add(ConstructorStatics.MaterialFloor.Get());
+	Materials.Add(ConstructorStatics.MaterialFloor.Get());
+	Materials.Add(ConstructorStatics.MaterialGrid.Get());
+	Materials.Add(ConstructorStatics.MaterialHighlight.Get());
+}
+
+void ARoguelikeMapBlock::SetHighlight()
+{
+	BlockMesh->SetMaterial(0, Materials[2]);
+}
+
+void ARoguelikeMapBlock::ResetMaterial()
+{
+	BlockMesh->SetMaterial(0, Materials[1]);
 }
 
 // Called when the game starts or when spawned

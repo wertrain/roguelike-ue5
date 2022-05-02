@@ -26,10 +26,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UNiagaraSystem* FXCursor;
 
-public:
-	void SetRoguelikeMap(class ARoguelikeMap* RoguelikeMap);
-	void SetOnGrid(int X, int Y);
-
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
@@ -62,12 +58,6 @@ private:
 	bool bInputPressed; // Input is bring pressed
 	bool bIsTouch; // Is it a touch device
 	float FollowTime; // For how long it has been pressed
-	class ARoguelikeMap* RoguelikeMap;
-	int32 MapX;
-	int32 MapY;
-	FVector LastLocation;
-	FVector NextLocation;
-	uint32 IsMoving : 1;
 };
 
 

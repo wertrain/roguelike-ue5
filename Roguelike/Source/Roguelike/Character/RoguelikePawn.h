@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Roguelike/System/Command/CommandQueue.h"
 #include "RoguelikePawn.generated.h"
 
 UCLASS()
@@ -14,6 +15,9 @@ class ROGUELIKE_API ARoguelikePawn : public APawn
 public:
 	// Sets default values for this pawn's properties
 	ARoguelikePawn();
+
+	/** Returns GridMovementComponent subobject */
+	FORCEINLINE class URoguelikeMovementComponent* GetRoguelikeMovementComponent() const { return RoguelikeMovementComponent; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -26,4 +30,25 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
+public:
+	void Step(uint64 TurnCount);
+	bool IsStepFinished(uint64 TurnCount);
+
+private:
+	/** Support for moving characters on the grid */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class URoguelikeMovementComponent* RoguelikeMovementComponent;
+
+private:
+	enum class EBehaviorID
+	{
+		Nop,
+		SearchPlayer,
+		TracePlayer
+	};
+
+	EBehaviorID BehaviorID;
+	CommandQueue RoguelikeCommands;
+	TQueue<FIntPoint> TracePoints;
 };
