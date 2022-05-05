@@ -30,6 +30,12 @@ public:
 	void RemovePawn(class ARoguelikePawn* Pawn);
 
 private:
+	struct TurnActions
+	{
+		class CommandBase* Command;
+		class ARoguelikePawn* Pawn;
+	};
+
 	union GameStates
 	{
 		uint32 Value;

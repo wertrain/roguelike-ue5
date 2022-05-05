@@ -34,6 +34,7 @@ public:
 public:
 	void Step(uint64 TurnCount);
 	bool IsStepFinished(uint64 TurnCount);
+	void XTurnAction(uint64 TurnCount);
 
 private:
 	/** Support for moving characters on the grid */

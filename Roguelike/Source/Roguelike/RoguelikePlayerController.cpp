@@ -89,6 +89,8 @@ void ARoguelikePlayerController::SetupInputComponent()
 	InputComponent->BindAction("Left", IE_Released, this, &ARoguelikePlayerController::OnReleasedLeft);
 	InputComponent->BindAction("Right", IE_Pressed, this, &ARoguelikePlayerController::OnPressedRight);
 	InputComponent->BindAction("Right", IE_Released, this, &ARoguelikePlayerController::OnReleasedRight);
+	InputComponent->BindAction("Enter", IE_Pressed, this, &ARoguelikePlayerController::OnPressedEnter);
+	InputComponent->BindAction("Enter", IE_Released, this, &ARoguelikePlayerController::OnReleasedEnter);
 
 	InputComponent->BindAction("SetDestination", IE_Pressed, this, &ARoguelikePlayerController::OnSetDestinationPressed);
 	InputComponent->BindAction("SetDestination", IE_Released, this, &ARoguelikePlayerController::OnSetDestinationReleased);
@@ -102,10 +104,12 @@ void ARoguelikePlayerController::OnPressedUp() { bMoveUp = true; }
 void ARoguelikePlayerController::OnPressedDown() { bMoveDown = true; }
 void ARoguelikePlayerController::OnPressedLeft() { bMoveLeft = true; }
 void ARoguelikePlayerController::OnPressedRight() { bMoveRight = true; }
+void ARoguelikePlayerController::OnPressedEnter() { bEnter = true; }
 void ARoguelikePlayerController::OnReleasedUp() { bMoveUp = false; }
 void ARoguelikePlayerController::OnReleasedDown() { bMoveDown = false; }
 void ARoguelikePlayerController::OnReleasedLeft() { bMoveLeft = false; }
 void ARoguelikePlayerController::OnReleasedRight() { bMoveRight = false; }
+void ARoguelikePlayerController::OnReleasedEnter() { bEnter = false; }
 
 void ARoguelikePlayerController::OnSetDestinationPressed()
 {

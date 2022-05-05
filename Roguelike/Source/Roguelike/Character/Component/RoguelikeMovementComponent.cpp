@@ -119,7 +119,7 @@ void Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint&
 }
 
 URoguelikeMovementComponent::URoguelikeMovementComponent()
-	: MoveSpeed(10.0f)
+	: MoveSpeed(20.0f)
 	, RotateSpeed(5.0f)
 	, RoguelikeMap(nullptr)
 	, CurrentPoint()
