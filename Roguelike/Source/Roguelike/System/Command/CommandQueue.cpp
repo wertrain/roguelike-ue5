@@ -47,7 +47,7 @@ void CommandQueue::ExecuteCommand()
             break;
         }
     }
-    while (!CurrentCommand->IsFinished());
+    while (CurrentCommand->IsFinished());
 }
 
 void CommandQueue::Update(const float DeltaTime)
@@ -62,4 +62,20 @@ void CommandQueue::Update(const float DeltaTime)
             CurrentCommand = nullptr;
         }
     }
+}
+
+bool CommandQueue::UpdateCurrentCommand(const float DeltaTime)
+{
+    if (CurrentCommand)
+    {
+        CurrentCommand->Update(DeltaTime);
+
+        if (CurrentCommand->IsFinished())
+        {
+            delete CurrentCommand;
+            CurrentCommand = nullptr;
+            return true;
+        }
+    }
+    return false;
 }

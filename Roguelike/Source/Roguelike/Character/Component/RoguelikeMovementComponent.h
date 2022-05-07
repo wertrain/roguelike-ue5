@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Roguelike/Map/MapDefinitions.h"
+#include "Roguelike/Character/CharacterDefinitions.h"
 #include "RoguelikeMovementComponent.generated.h"
 
 // @see https://forums.unrealengine.com/t/delegates-as-parameter/299175/15
@@ -32,30 +33,32 @@ public:
 
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Map", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character", meta = (AllowPrivateAccess = "true"))
 	float MoveSpeed;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Map", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character", meta = (AllowPrivateAccess = "true"))
 	float RotateSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character", meta = (AllowPrivateAccess = "true"))
+	EDirections Direction;
 
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void SetRoguelikeMap(class ARoguelikeMap* RoguelikeMap);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void SetOnGrid(int32 X, int32 Y);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void SetPoint(const FIntPoint Point);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	FIntPoint GetPoint() const;
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void MoveTo(int32 X, int32 Y);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void MoveToPoint(const FIntPoint Point);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void TraceTo(int32 X, int32 Y);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void TraceToPoint(const FIntPoint Point);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void TraceToPointEx(const FIntPoint Point, const FOnArrivedDelegate& Callback);
-	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map")
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	bool IsMoving() const;
 
 public:

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Roguelike/System/Command/CommandQueue.h"
+#include "Roguelike/Character/CharacterDefinitions.h"
 #include "RoguelikeGameSubsystem.generated.h"
 
 /**
@@ -26,16 +28,14 @@ public:
 public:
 	bool IsPlayerTurn();
 	void StartStepAllPawns();
-	void AddPawn(class ARoguelikePawn* Pawn);
+	class ARoguelikePawn* GetPlayer() const;
+	void ExecuteTurnCommands(const TArray<class CommandBase*> PlayerCommands);
+	void GetPawns(const EFactions Faction, TArray<class ARoguelikePawn*>& OutArray);
+	void AddPawn(const EFactions Faction, class ARoguelikePawn* Pawn);
 	void RemovePawn(class ARoguelikePawn* Pawn);
+	void RemovePawn(const EFactions Faction, class ARoguelikePawn* Pawn);
 
 private:
-	struct TurnActions
-	{
-		class CommandBase* Command;
-		class ARoguelikePawn* Pawn;
-	};
-
 	union GameStates
 	{
 		uint32 Value;
@@ -48,5 +48,7 @@ private:
 	} 
 	States;
 	uint64 TurnCount;
-	TArray<class ARoguelikePawn*> RoguelikePawns;
+	TArray<class ARoguelikePawn*> RoguelikePawns[static_cast<size_t>(EFactions::Num)];
+	CommandQueue Commands;
+	TQueue<class ARoguelikePawn*> WaitingForActionQueue;
 };

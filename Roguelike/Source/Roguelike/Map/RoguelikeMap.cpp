@@ -10,6 +10,11 @@
 // Sets default values
 ARoguelikeMap::ARoguelikeMap()
 	: Blocks()
+	, MapWidth(0)
+	, MapHeight(0)
+	, Map()
+	, CollisionMap()
+	, PawnMap()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -59,10 +64,12 @@ void ARoguelikeMap::CreateNewMap()
 		{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 	};
 
-	Map.AddUninitialized(Height * Width);
-	CollisionMap.AddUninitialized(Height * Width);
-	FMemory::Memcpy(Map.GetData(), Maps, Height * Width * sizeof(int32));
-	FMemory::Memcpy(CollisionMap.GetData(), Maps, Height * Width * sizeof(int32));
+	const int32 MapElementNum = Height * Width;
+	Map.AddUninitialized(MapElementNum);
+	CollisionMap.AddUninitialized(MapElementNum);
+	PawnMap.AddZeroed(MapElementNum);
+	FMemory::Memcpy(Map.GetData(), Maps, MapElementNum * sizeof(int32));
+	FMemory::Memcpy(CollisionMap.GetData(), Maps, MapElementNum * sizeof(int32));
 
 	MapWidth = Width;
 	MapHeight = Height;
@@ -85,26 +92,53 @@ void ARoguelikeMap::CreateNewMap()
 	}
 }
 
-FVector ARoguelikeMap::GetLocationOnGrid(int X, int Y) const
+FVector ARoguelikeMap::GetLocationOnGrid(const int X, const int Y) const
 {
-	const int Index = (MapWidth * Y) + X;
-	return Blocks[Index]->GetActorLocation();
+	return Blocks[PointToIndex(X, Y)]->GetActorLocation();
 }
 
 bool ARoguelikeMap::CanPass(const int X, const int Y)
 {
-	const int Index = (MapWidth * Y) + X;
-	return CollisionMap[Index] == 0;
+	const auto Index = PointToIndex(X, Y);
+	return CollisionMap[Index] == 0 && PawnMap[Index] == nullptr;
+}
+
+void ARoguelikeMap::ResetPawnPoint(class APawn* Pawn, const FIntPoint Point)
+{
+	for (int32 Index = 0; Index < PawnMap.Num(); ++Index)
+	{
+		if (PawnMap[Index] == Pawn)
+		{
+			PawnMap[Index] = nullptr;
+			break;
+		}
+	}
+	PawnMap[PointToIndex(Point)] = Pawn;
+}
+
+void ARoguelikeMap::UpdatePawnPoint(class APawn* Pawn, const FIntPoint OldPoint, const FIntPoint NewPoint)
+{
+	check(PawnMap[PointToIndex(OldPoint)] == Pawn);
+	PawnMap[PointToIndex(OldPoint)] = nullptr;
+	PawnMap[PointToIndex(NewPoint)] = Pawn;
+}
+
+const APawn* ARoguelikeMap::GetPawn(const int X, const int Y) const
+{
+	if (X < 0 || MapWidth >= X || Y < 0 || MapHeight >= Y)
+	{
+		return nullptr;
+	}
+	return PawnMap[PointToIndex(X, Y)];
 }
 
 void ARoguelikeMap::SetHighlight(TArray<FIntPoint> Points)
 {
 	ResetHighlight();
 
-	for (auto& Point : Points)
+	for (const auto& Point : Points)
 	{
-		const int Index = (MapWidth * Point.Y) + Point.X;
-		Blocks[Index]->SetHighlight();
+		Blocks[PointToIndex(Point)]->SetHighlight();
 	}
 }
 
@@ -114,4 +148,19 @@ void ARoguelikeMap::ResetHighlight()
 	{
 		Block->ResetMaterial();
 	}
+}
+
+uint32 ARoguelikeMap::PointToIndex(const int32 X, const int32 Y) const
+{
+	return (MapWidth * Y) + X;
+}
+
+uint32 ARoguelikeMap::PointToIndex(const FIntPoint Point) const
+{
+	return (MapWidth * Point.Y) + Point.X;
+}
+
+FIntPoint ARoguelikeMap::IndexToPoint(const int32 Index) const
+{
+	return FIntPoint(Index % MapWidth, Index / MapHeight);
 }

@@ -8,5 +8,6 @@
 class MapFunctions
 {
 public:
-    static void Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint& Goal, TArray<FIntPoint>& OutLsit);
+    static void Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint& Goal, TArray<FIntPoint>& OutArray);
+    static void Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Start, const TArray<FIntPoint>& Goals, TArray<TArray<FIntPoint>*>& OutArrays);
 };

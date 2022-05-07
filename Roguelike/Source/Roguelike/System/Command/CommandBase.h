@@ -17,5 +17,6 @@ public:
 
 	virtual void Execute() {}
 	virtual bool IsFinished() { return true; }
+	virtual bool IsSync() { return false; }
 	virtual void Update(float DeltaTime) {}
 };

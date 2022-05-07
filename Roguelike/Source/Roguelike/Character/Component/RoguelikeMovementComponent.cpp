@@ -120,7 +120,8 @@ void Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint&
 
 URoguelikeMovementComponent::URoguelikeMovementComponent()
 	: MoveSpeed(20.0f)
-	, RotateSpeed(5.0f)
+	, RotateSpeed(4.0f)
+	, Direction(EDirections::Down)
 	, RoguelikeMap(nullptr)
 	, CurrentPoint()
 	, NextPoint()
@@ -150,6 +151,7 @@ void URoguelikeMovementComponent::SetPoint(const FIntPoint Point)
 	if (APawn* const Pawn = GetPawnOwner())
 	{
 		CurrentPoint = Point;
+		RoguelikeMap->ResetPawnPoint(Pawn, CurrentPoint);
 
 		auto NewLocation = RoguelikeMap->GetLocationOnGrid(Point.X, Point.Y);
 		NewLocation.Z = GetActorLocation().Z;
@@ -306,7 +308,6 @@ void URoguelikeMovementComponent::OnComponentCreated()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s - RoguelikeMap is not found."), *GetOwner()->GetName());
 	}
-	//check(RoguelikeMap != nullptr);
 }
 
 void URoguelikeMovementComponent::AddInputVector(FVector WorldVector, bool bForce)
@@ -328,7 +329,6 @@ void URoguelikeMovementComponent::AddInputVector(FVector WorldVector, bool bForc
 void URoguelikeMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	SetOnGrid(5, 5);
 }
 
 void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -350,7 +350,9 @@ void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 					FIntPoint Point;
 					if (TracePoints.Dequeue(Point))
 					{
+						// ˆÚ“®Ï‚Ý‚Æ‚Ý‚È‚µ‚Ä‹­§XV
 						CurrentPoint = NextPoint;
+						// ŽŸ‚ÌˆÚ“®æ‚Ö
 						MoveTo(Point.X, Point.Y);
 					}
 					else
@@ -367,7 +369,7 @@ void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		if (APawn* const Pawn = GetPawnOwner())
 		{
 			// ˆÚ“®•ûŒü
-			FVector WorldDirection = (NextLocation - Pawn->GetActorLocation()).GetSafeNormal();
+			FVector WorldDirection = (NextLocation - CurrentLocation).GetSafeNormal();
 			Pawn->AddMovementInput(WorldDirection, 1.f, true);
 
 			const auto ActorLocation = Pawn->GetActorLocation();
@@ -375,10 +377,17 @@ void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 			if (NextLocation.Equals(ActorLocation, MapDefinitions::GridSize * 0.1f))
 			{
 				CurrentPoint = NextPoint;
-				CurrentLocation = ActorLocation;
+				CurrentLocation = NextLocation;
 				States.Flags.IsMoving = false;
 
+				//FTransform Transform = Pawn->GetActorTransform();
+				//Transform.SetLocation(CurrentLocation);
+				//Transform.SetRotation(WorldDirection.Rotation().Quaternion());
+				//Pawn->SetActorTransform(Transform);
+				//Pawn->SetActorLocation(CurrentLocation);
+
 				//TraceArrivedDelegate.ExecuteIfBound();
+
 				UE_LOG(LogTemp, VeryVerbose, TEXT("%s - [MOVE END]"), *Pawn->GetName());
 			}
 			else
@@ -386,6 +395,13 @@ void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 				UE_LOG(LogTemp, VeryVerbose, TEXT("%s - [MOVING] (%d, %d) : (%f, %f, %f)"),
 					*Pawn->GetName(), NextPoint.X, NextPoint.Y, NextLocation.X, NextLocation.Y, NextLocation.Z);
 			}
+
+			auto Rotation = Pawn->GetActorRotation();
+			UE_LOG(LogTemp, Log, TEXT(" (%f, %f, %f)"), Rotation.Roll, Rotation.Pitch, Rotation.Yaw);
 		}
+	}
+	else
+	{
+		Velocity = FVector::ZeroVector;
 	}
 }

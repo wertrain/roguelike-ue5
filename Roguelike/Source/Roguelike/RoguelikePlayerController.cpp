@@ -11,8 +11,10 @@
 
 #include "Map/RoguelikeMap.h"
 #include "Map/MapDefinitions.h"
+#include "Roguelike/Character/RoguelikePawn.h"
 #include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
 #include "Roguelike/System/RoguelikeGameSubsystem.h"
+#include "Roguelike/System/Command/MovementCommand.h"
 
 ARoguelikePlayerController::ARoguelikePlayerController()
 {
@@ -23,7 +25,7 @@ ARoguelikePlayerController::ARoguelikePlayerController()
 void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
-
+#if false
 	UGameInstance* GameInstance = GetGameInstance();
 	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
 
@@ -74,6 +76,54 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 	{
 		FollowTime = 0.f;
 	}
+#else
+	UGameInstance* GameInstance = GetGameInstance();
+	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
+
+	if (RoguelikeGameSubsystem->IsPlayerTurn() && (bMoveLeft || bMoveRight || bMoveUp || bMoveDown))
+	{
+		if (ARoguelikePawn* const MyPawn = Cast<ARoguelikePawn>(GetPawn()))
+		{
+			FIntPoint CurrentPoint = MyPawn->GetRoguelikeMovementComponent()->GetPoint();
+			if (bMoveLeft)
+			{
+				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X - 1, CurrentPoint.Y))
+				{
+					TArray<CommandBase*> Commands;
+					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X - 1, CurrentPoint.Y)));
+					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+				}
+			}
+			else if (bMoveRight)
+			{
+				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X + 1, CurrentPoint.Y))
+				{
+					TArray<CommandBase*> Commands;
+					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X + 1, CurrentPoint.Y)));
+					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+				}
+			}
+			else if (bMoveUp)
+			{
+				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y - 1))
+				{
+					TArray<CommandBase*> Commands;
+					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y - 1)));
+					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+				}
+			}
+			else if (bMoveDown)
+			{
+				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y + 1))
+				{
+					TArray<CommandBase*> Commands;
+					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y + 1)));
+					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+				}
+			}
+		}
+	}
+#endif
 }
 
 void ARoguelikePlayerController::SetupInputComponent()
@@ -92,8 +142,8 @@ void ARoguelikePlayerController::SetupInputComponent()
 	InputComponent->BindAction("Enter", IE_Pressed, this, &ARoguelikePlayerController::OnPressedEnter);
 	InputComponent->BindAction("Enter", IE_Released, this, &ARoguelikePlayerController::OnReleasedEnter);
 
-	InputComponent->BindAction("SetDestination", IE_Pressed, this, &ARoguelikePlayerController::OnSetDestinationPressed);
-	InputComponent->BindAction("SetDestination", IE_Released, this, &ARoguelikePlayerController::OnSetDestinationReleased);
+	//InputComponent->BindAction("SetDestination", IE_Pressed, this, &ARoguelikePlayerController::OnSetDestinationPressed);
+	//InputComponent->BindAction("SetDestination", IE_Released, this, &ARoguelikePlayerController::OnSetDestinationReleased);
 
 	// support touch devices
 	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ARoguelikePlayerController::OnTouchPressed);

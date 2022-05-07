@@ -13,6 +13,8 @@
 
 // Sets default values
 ARoguelikePawn::ARoguelikePawn()
+	: PlayerIndex(-1)
+	, InitialPoint(5, 5)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -30,13 +32,13 @@ ARoguelikePawn::ARoguelikePawn()
 void ARoguelikePawn::BeginPlay()
 {
 	Super::BeginPlay();
-	RoguelikeMovementComponent->SetPoint(FIntPoint(14, 14));
+	RoguelikeMovementComponent->SetPoint(InitialPoint);
 
 	BehaviorID = EBehaviorID::SearchPlayer;
 
 	UGameInstance* GameInstance = GetGameInstance();
 	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
-	RoguelikeGameSubsystem->AddPawn(this);
+	RoguelikeGameSubsystem->AddPawn(EFactions::Enemys, this);
 }
 
 // Called every frame
@@ -44,7 +46,7 @@ void ARoguelikePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	RoguelikeCommands.Update(DeltaTime);
+	//RoguelikeCommands.Update(DeltaTime);
 }
 
 // Called to bind functionality to input

@@ -18,6 +18,7 @@ public:
 	bool IsEmpty();
 	void ExecuteCommand();
 	void Update(float DeltaTime);
+	bool UpdateCurrentCommand(const float DeltaTime);
 
 private:
 	TQueue<class CommandBase*> Commands;

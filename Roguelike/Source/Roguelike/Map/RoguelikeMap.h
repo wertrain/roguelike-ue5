@@ -22,6 +22,9 @@ public:
 
 	FVector GetLocationOnGrid(int X, int Y) const;
 	bool CanPass(int X, int Y);
+	void ResetPawnPoint(class APawn* Pawn, const FIntPoint Point);
+	void UpdatePawnPoint(class APawn* Pawn, const FIntPoint OldPoint, const FIntPoint NewPoint);
+	const class APawn* GetPawn(int X, int Y) const;
 
 	void SetHighlight(TArray<FIntPoint> Points);
 	void ResetHighlight();
@@ -40,9 +43,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	uint32 PointToIndex(int32 X, int32 Y) const;
+	uint32 PointToIndex(FIntPoint Point) const;
+	FIntPoint IndexToPoint(int32 Index) const;
+
+private:
 	TArray<class ARoguelikeMapBlock*> Blocks;
 	int32 MapWidth;
 	int32 MapHeight;
 	TArray<uint32> Map;
 	TArray<uint32> CollisionMap;
+	TArray<class APawn*> PawnMap;
 };

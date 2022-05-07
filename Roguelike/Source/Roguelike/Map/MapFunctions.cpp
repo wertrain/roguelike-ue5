@@ -6,6 +6,15 @@
 
 void MapFunctions::Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint& Goal, TArray<FIntPoint>& OutArray)
 {
+	TArray<FIntPoint> Goals;
+	TArray<TArray<FIntPoint>*> OutArrays;
+	Goals.Add(Goal);
+	OutArrays.Add(&OutArray);
+	Dijkstra(Map, Start, Goals, OutArrays);
+}
+
+void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Start, const TArray<FIntPoint>& Goals, TArray<TArray<FIntPoint>*>& OutArrays)
+{
 	struct Node
 	{
 		int32 X;
@@ -89,22 +98,25 @@ void MapFunctions::Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, co
 	UE_LOG(LogTemp, Log, TEXT("%s"), *DebugMap);
 #endif
 
-	OutArray.Empty();
+	for (int32 Index = 0; Index < Goals.Num(); ++Index)
 	{
-		auto* GoalNode = &NodeMap[(MapWidth * Goal.Y) + Goal.X];
-		TArray<Node*> TraceNodes;
-
-		Node* CheckNode = GoalNode;
-		while (CheckNode)
+		OutArrays[Index]->Empty();
 		{
-			TraceNodes.Add(CheckNode);
-			CheckNode = CheckNode->PrevNode;
-		}
+			auto* GoalNode = &NodeMap[(MapWidth * Goals[Index].Y) + Goals[Index].X];
+			TArray<Node*> TraceNodes;
 
-		Algo::Reverse(TraceNodes);
-		for (auto* Node : TraceNodes)
-		{
-			OutArray.Add(FIntPoint(Node->X, Node->Y));
+			Node* CheckNode = GoalNode;
+			while (CheckNode)
+			{
+				TraceNodes.Add(CheckNode);
+				CheckNode = CheckNode->PrevNode;
+			}
+
+			Algo::Reverse(TraceNodes);
+			for (auto* Node : TraceNodes)
+			{
+				OutArrays[Index]->Add(FIntPoint(Node->X, Node->Y));
+			}
 		}
 	}
 }

@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MovementCommand.h"
+#include "Roguelike/System/Command/MovementCommand.h"
 #include "Roguelike/Character/RoguelikePawn.h"
 #include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
+#include "Roguelike/Map/RoguelikeMap.h"
 
 MovementCommand::MovementCommand(class ARoguelikePawn* Pawn, const FIntPoint& Point)
     : CommandBase()
@@ -11,6 +12,12 @@ MovementCommand::MovementCommand(class ARoguelikePawn* Pawn, const FIntPoint& Po
     , NextPoint(Point)
 {
     check(Target != nullptr);
+
+    if (auto* RoguelikeMovementComponent = Target->GetRoguelikeMovementComponent())
+    {
+        RoguelikeMovementComponent->GetRoguelikeMap()->UpdatePawnPoint(
+            Pawn, RoguelikeMovementComponent->GetPoint(), NextPoint);
+    }
 }
 
 MovementCommand::~MovementCommand()

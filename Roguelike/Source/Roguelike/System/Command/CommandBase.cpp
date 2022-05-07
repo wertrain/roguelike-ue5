@@ -7,6 +7,4 @@ CommandBase::CommandBase()
 {
 }
 
-CommandBase::~CommandBase()
-{
-}
+CommandBase::~CommandBase() = default;

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Roguelike/System/Command/CommandQueue.h"
+#include "Roguelike/Character/CharacterStatus.h"
 #include "RoguelikePawn.generated.h"
 
 UCLASS()
@@ -15,6 +16,15 @@ class ROGUELIKE_API ARoguelikePawn : public APawn
 public:
 	// Sets default values for this pawn's properties
 	ARoguelikePawn();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character")
+	int32 PlayerIndex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character")
+	FIntPoint InitialPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character")
+	FCharacterStatus OriginalStatus;
 
 	/** Returns GridMovementComponent subobject */
 	FORCEINLINE class URoguelikeMovementComponent* GetRoguelikeMovementComponent() const { return RoguelikeMovementComponent; }
