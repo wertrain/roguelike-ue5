@@ -4,6 +4,7 @@
 #include "Roguelike/System/AI/AI.h"
 #include "Roguelike/System/Command/CommandBase.h"
 #include "Roguelike/System/Command/MovementCommand.h"
+#include "Roguelike/System/Command/DamageCommand.h"
 #include "Roguelike/System/RoguelikeGameSubsystem.h"
 #include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
 #include "Roguelike/Character/CharacterStatus.h"
@@ -22,7 +23,22 @@ void AI::CreateCommands(URoguelikeGameSubsystem* RoguelikeGameSubsystem, ARoguel
     int NumOfActions = Pawn->OriginalStatus.NumberOfActions;
     while (NumOfActions > 0)
     {
-        CommandSearchAdversary(RoguelikeGameSubsystem, Pawn, Commands);
+        bool IsSearch = false;
+        {
+            URoguelikeMovementComponent* RoguelikeMovementComponent = Pawn->GetRoguelikeMovementComponent();
+            FIntPoint Point = RoguelikeMovementComponent->GetPoint();
+            ARoguelikeMap* Map = RoguelikeMovementComponent->GetRoguelikeMap();
+
+            IsSearch = Map->GetPawn(Point.X + 1, Point.Y) == nullptr &&
+                       Map->GetPawn(Point.X - 1, Point.Y) == nullptr &&
+                       Map->GetPawn(Point.X, Point.Y + 1) == nullptr &&
+                       Map->GetPawn(Point.X, Point.Y - 1) == nullptr;
+        }
+
+        if (IsSearch)
+        {
+            CommandSearchAdversary(RoguelikeGameSubsystem, Pawn, Commands);
+        }
         --NumOfActions;
     }
 }

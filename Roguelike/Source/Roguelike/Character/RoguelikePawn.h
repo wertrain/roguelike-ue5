@@ -6,10 +6,11 @@
 #include "GameFramework/Pawn.h"
 #include "Roguelike/System/Command/CommandQueue.h"
 #include "Roguelike/Character/CharacterStatus.h"
+#include "Roguelike/Character/CharacterAnimator.h"
 #include "RoguelikePawn.generated.h"
 
 UCLASS()
-class ROGUELIKE_API ARoguelikePawn : public APawn
+class ROGUELIKE_API ARoguelikePawn : public APawn, public ICharacterAnimator
 {
 	GENERATED_BODY()
 
@@ -42,24 +43,12 @@ public:
 
 
 public:
-	void Step(uint64 TurnCount);
-	bool IsStepFinished(uint64 TurnCount);
-	void XTurnAction(uint64 TurnCount);
+	class UCharacterAnimInstance* GetAnimInstance() const;
 
 private:
 	/** Support for moving characters on the grid */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class URoguelikeMovementComponent* RoguelikeMovementComponent;
 
-private:
-	enum class EBehaviorID
-	{
-		Nop,
-		SearchPlayer,
-		TracePlayer
-	};
-
-	EBehaviorID BehaviorID;
-	CommandQueue RoguelikeCommands;
-	TQueue<FIntPoint> TracePoints;
+	FCharacterStatus CurrentStatus;
 };

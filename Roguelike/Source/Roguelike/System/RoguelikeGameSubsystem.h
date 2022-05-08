@@ -27,7 +27,6 @@ public:
 
 public:
 	bool IsPlayerTurn();
-	void StartStepAllPawns();
 	class ARoguelikePawn* GetPlayer() const;
 	void ExecuteTurnCommands(const TArray<class CommandBase*> PlayerCommands);
 	void GetPawns(const EFactions Faction, TArray<class ARoguelikePawn*>& OutArray);

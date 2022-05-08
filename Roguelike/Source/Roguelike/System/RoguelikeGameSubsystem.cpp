@@ -68,19 +68,6 @@ bool URoguelikeGameSubsystem::IsPlayerTurn()
     return States.Flags.IsPlayerTurn;
 }
 
-void URoguelikeGameSubsystem::StartStepAllPawns()
-{
-    States.Flags.IsPlayerTurn = false;
-
-    for (int i = 0; i < static_cast<size_t>(EFactions::Num); ++i)
-    {
-        for (auto& Pawn : RoguelikePawns[i])
-        {
-            Pawn->Step(TurnCount);
-        }
-    }
-}
-
 ARoguelikePawn* URoguelikeGameSubsystem::GetPlayer() const
 {
     const auto GameInstance = GetGameInstance();

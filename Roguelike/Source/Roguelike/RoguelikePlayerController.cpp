@@ -15,6 +15,7 @@
 #include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
 #include "Roguelike/System/RoguelikeGameSubsystem.h"
 #include "Roguelike/System/Command/MovementCommand.h"
+#include "Roguelike/System/Command/DamageCommand.h"
 
 ARoguelikePlayerController::ARoguelikePlayerController()
 {
@@ -80,7 +81,7 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 	UGameInstance* GameInstance = GetGameInstance();
 	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
 
-	if (RoguelikeGameSubsystem->IsPlayerTurn() && (bMoveLeft || bMoveRight || bMoveUp || bMoveDown))
+	if (RoguelikeGameSubsystem->IsPlayerTurn() && (bMoveLeft || bMoveRight || bMoveUp || bMoveDown || bEnter))
 	{
 		if (ARoguelikePawn* const MyPawn = Cast<ARoguelikePawn>(GetPawn()))
 		{
@@ -121,6 +122,17 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
 				}
 			}
+			else if (bEnter)
+			{
+				MyPawn->SetAnimationFlag(ECharacterAnimationFlag::AttackPunch, true);
+
+				TArray<ARoguelikePawn*> Enemys;
+				RoguelikeGameSubsystem->GetPawns(EFactions::Enemys, Enemys);
+
+				TArray<CommandBase*> Commands;
+				Commands.Add(new DamageCommand(MyPawn, Enemys[0]));
+				RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+			}
 		}
 	}
 #endif
@@ -131,16 +143,16 @@ void ARoguelikePlayerController::SetupInputComponent()
 	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("Up", IE_Pressed, this, &ARoguelikePlayerController::OnPressedUp);
-	InputComponent->BindAction("Up", IE_Released, this, &ARoguelikePlayerController::OnReleasedUp);
-	InputComponent->BindAction("Down", IE_Pressed, this, &ARoguelikePlayerController::OnPressedDown);
-	InputComponent->BindAction("Down", IE_Released, this, &ARoguelikePlayerController::OnReleasedDown);
-	InputComponent->BindAction("Left", IE_Pressed, this, &ARoguelikePlayerController::OnPressedLeft);
-	InputComponent->BindAction("Left", IE_Released, this, &ARoguelikePlayerController::OnReleasedLeft);
-	InputComponent->BindAction("Right", IE_Pressed, this, &ARoguelikePlayerController::OnPressedRight);
-	InputComponent->BindAction("Right", IE_Released, this, &ARoguelikePlayerController::OnReleasedRight);
-	InputComponent->BindAction("Enter", IE_Pressed, this, &ARoguelikePlayerController::OnPressedEnter);
-	InputComponent->BindAction("Enter", IE_Released, this, &ARoguelikePlayerController::OnReleasedEnter);
+	InputComponent->BindAction("CursorUp", IE_Pressed, this, &ARoguelikePlayerController::OnPressedUp);
+	InputComponent->BindAction("CursorUp", IE_Released, this, &ARoguelikePlayerController::OnReleasedUp);
+	InputComponent->BindAction("CursorDown", IE_Pressed, this, &ARoguelikePlayerController::OnPressedDown);
+	InputComponent->BindAction("CursorDown", IE_Released, this, &ARoguelikePlayerController::OnReleasedDown);
+	InputComponent->BindAction("CursorLeft", IE_Pressed, this, &ARoguelikePlayerController::OnPressedLeft);
+	InputComponent->BindAction("CursorLeft", IE_Released, this, &ARoguelikePlayerController::OnReleasedLeft);
+	InputComponent->BindAction("CursorRight", IE_Pressed, this, &ARoguelikePlayerController::OnPressedRight);
+	InputComponent->BindAction("CursorRight", IE_Released, this, &ARoguelikePlayerController::OnReleasedRight);
+	InputComponent->BindAction("ButtonDown", IE_Pressed, this, &ARoguelikePlayerController::OnPressedEnter);
+	InputComponent->BindAction("ButtonDown", IE_Released, this, &ARoguelikePlayerController::OnReleasedEnter);
 
 	//InputComponent->BindAction("SetDestination", IE_Pressed, this, &ARoguelikePlayerController::OnSetDestinationPressed);
 	//InputComponent->BindAction("SetDestination", IE_Released, this, &ARoguelikePlayerController::OnSetDestinationReleased);

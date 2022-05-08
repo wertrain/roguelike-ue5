@@ -49,6 +49,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	FIntPoint GetPoint() const;
 	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
+	FIntPoint GetNextPoint() const;
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void MoveTo(int32 X, int32 Y);
 	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void MoveToPoint(const FIntPoint Point);
@@ -81,12 +83,17 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	EDirections RotatorToDirection(const FRotator& Rotator) const;
+	FRotator DirectionToRotator(const EDirections& Direction) const;
+
+private:
 	class ARoguelikeMap* RoguelikeMap;
 	FIntPoint CurrentPoint;
 	FIntPoint NextPoint;
 	FVector CurrentLocation;
 	FVector NextLocation;
 	MoveStates States;
+	float VelocityTimer;
 	TQueue<FIntPoint> TracePoints;
 	FOnArrivedDelegate TraceArrivedDelegate;
 };

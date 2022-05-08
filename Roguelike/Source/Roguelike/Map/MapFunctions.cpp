@@ -4,6 +4,29 @@
 #include "MapFunctions.h"
 #include "RoguelikeMap.h"
 
+namespace
+{
+
+struct Node
+{
+	int32 X;
+	int32 Y;
+	Node* PrevNode;
+	int32 Score;
+	bool Pass;
+	bool Checked;
+};
+
+struct LinkedNode
+{
+	Node* Node;
+	LinkedNode* NextLink;
+};
+
+static LinkedNode NodePool[1024*1024*16];
+
+}
+
 void MapFunctions::Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint& Goal, TArray<FIntPoint>& OutArray)
 {
 	TArray<FIntPoint> Goals;
@@ -15,16 +38,6 @@ void MapFunctions::Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, co
 
 void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Start, const TArray<FIntPoint>& Goals, TArray<TArray<FIntPoint>*>& OutArrays)
 {
-	struct Node
-	{
-		int32 X;
-		int32 Y;
-		Node* PrevNode;
-		int32 Score;
-		bool Pass;
-		bool Checked;
-	};
-
 	const int MapWidth = Map.GetWidth(), MapHeight = Map.GetHeight();
 
 	TArray<Node> NodeMap;
@@ -44,16 +57,24 @@ void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Sta
 		}
 	}
 
-	TArray<Node*> SearchNodeList;
+	//TArray<Node*> SearchNodeList;
 
 	int X = Start.X, Y = Start.Y;
 	auto* StartNode = &NodeMap[(MapWidth * Y) + X];
 	StartNode->Score = 0;
-	SearchNodeList.Add(StartNode);
+	//SearchNodeList.Add(StartNode);
 
-	for (int SearchIndex = 0; SearchIndex < SearchNodeList.Num(); ++SearchIndex)
+	LinkedNode StartLink;
+	StartLink.Node = StartNode;
+	StartLink.NextLink = nullptr;
+
+	LinkedNode* CurrentLink = &StartLink;
+	LinkedNode* TailLink = CurrentLink;
+	int LinkIndex = 0;
+
+	while (CurrentLink)
 	{
-		auto* Node = SearchNodeList[SearchIndex];
+		auto* Node = CurrentLink->Node;
 		X = Node->X;
 		Y = Node->Y;
 
@@ -78,9 +99,17 @@ void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Sta
 				NodeMap[CheckIndex].Score = Node->Score + 1;
 				NodeMap[CheckIndex].PrevNode = Node;
 			}
-			SearchNodeList.Add(&NodeMap[CheckIndex]);
+
+			auto NextLink = &NodePool[LinkIndex++];
+			NextLink->Node = &NodeMap[CheckIndex];
+			NextLink->NextLink = nullptr;
+
+			TailLink->NextLink = NextLink;
+			TailLink = NextLink;
 		}
 		Node->Checked = true;
+
+		CurrentLink = CurrentLink->NextLink;
 	}
 
 #if false

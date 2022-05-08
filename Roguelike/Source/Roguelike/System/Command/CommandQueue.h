@@ -23,4 +23,5 @@ public:
 private:
 	TQueue<class CommandBase*> Commands;
 	class CommandBase* CurrentCommand;
+	TArray<class CommandBase*> CurrentCommands;
 };

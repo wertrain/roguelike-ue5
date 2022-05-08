@@ -7,6 +7,7 @@
 CommandQueue::CommandQueue()
     : Commands()
     , CurrentCommand(nullptr)
+    , CurrentCommands()
 {
 }
 
@@ -31,11 +32,16 @@ CommandBase* CommandQueue::Dequeue()
 
 bool CommandQueue::IsEmpty()
 {
+#if false
     return Commands.IsEmpty() && CurrentCommand == nullptr;
+#else
+    return Commands.IsEmpty() && CurrentCommands.IsEmpty();
+#endif
 }
 
 void CommandQueue::ExecuteCommand()
 {
+#if false
     do
     {
         if (Commands.Dequeue(CurrentCommand))
@@ -48,10 +54,33 @@ void CommandQueue::ExecuteCommand()
         }
     }
     while (CurrentCommand->IsFinished());
+#else
+    do
+    {
+        CommandBase* Command;
+        if (Commands.Dequeue(Command))
+        {
+            Command->Execute();
+            CurrentCommands.Add(Command);
+
+            // 同期コマンドを実行したら終了待ちさせるために抜ける
+            if (Command->IsSync())
+            {
+                break;
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+    while (!CurrentCommands.IsEmpty());
+#endif
 }
 
 void CommandQueue::Update(const float DeltaTime)
 {
+#if false
     if (CurrentCommand)
     {
         CurrentCommand->Update(DeltaTime);
@@ -62,10 +91,31 @@ void CommandQueue::Update(const float DeltaTime)
             CurrentCommand = nullptr;
         }
     }
+#else
+    if (!CurrentCommands.IsEmpty())
+    {
+        TArray<CommandBase*> FinishedCommands;
+        for (auto* Command : CurrentCommands)
+        {
+            Command->Update(DeltaTime);
+
+            if (Command->IsFinished())
+            {
+                FinishedCommands.Add(Command);
+            }
+        }
+
+        for (auto* Command : FinishedCommands)
+        {
+            CurrentCommands.Remove(Command);
+        }
+    }
+#endif
 }
 
 bool CommandQueue::UpdateCurrentCommand(const float DeltaTime)
 {
+#if false
     if (CurrentCommand)
     {
         CurrentCommand->Update(DeltaTime);
@@ -78,4 +128,25 @@ bool CommandQueue::UpdateCurrentCommand(const float DeltaTime)
         }
     }
     return false;
+#else
+    if (!CurrentCommands.IsEmpty())
+    {
+        TArray<CommandBase*> FinishedCommands;
+        for (auto* Command : CurrentCommands)
+        {
+            Command->Update(DeltaTime);
+
+            if (Command->IsFinished())
+            {
+                FinishedCommands.Add(Command);
+            }
+        }
+
+        for (auto* Command : FinishedCommands)
+        {
+            CurrentCommands.Remove(Command);
+        }
+    }
+    return CurrentCommands.IsEmpty();
+#endif
 }

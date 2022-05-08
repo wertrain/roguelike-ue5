@@ -128,6 +128,7 @@ URoguelikeMovementComponent::URoguelikeMovementComponent()
 	, CurrentLocation()
 	, NextLocation()
 	, States()
+	, VelocityTimer(0.0f)
 	, TracePoints()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -164,6 +165,11 @@ void URoguelikeMovementComponent::SetPoint(const FIntPoint Point)
 FIntPoint URoguelikeMovementComponent::GetPoint() const
 {
 	return CurrentPoint;
+}
+
+FIntPoint URoguelikeMovementComponent::GetNextPoint() const
+{
+	return NextPoint;
 }
 
 void URoguelikeMovementComponent::MoveTo(const int32 X, const int32 Y)
@@ -329,6 +335,11 @@ void URoguelikeMovementComponent::AddInputVector(FVector WorldVector, bool bForc
 void URoguelikeMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (APawn* const Pawn = GetPawnOwner())
+	{
+		Pawn->SetActorRotation(DirectionToRotator(Direction));
+	}
 }
 
 void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -380,14 +391,19 @@ void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 				CurrentLocation = NextLocation;
 				States.Flags.IsMoving = false;
 
-				//FTransform Transform = Pawn->GetActorTransform();
-				//Transform.SetLocation(CurrentLocation);
-				//Transform.SetRotation(WorldDirection.Rotation().Quaternion());
-				//Pawn->SetActorTransform(Transform);
+				const FRotator Rotator = WorldDirection.Rotation();
+				Direction = RotatorToDirection(Rotator);
+
+				FTransform Transform = Pawn->GetActorTransform();
+				Transform.SetLocation(CurrentLocation);
+				Transform.SetRotation(Rotator.Quaternion());
+				Pawn->SetActorTransform(Transform);
+				
 				//Pawn->SetActorLocation(CurrentLocation);
 
 				//TraceArrivedDelegate.ExecuteIfBound();
 
+				VelocityTimer = 1.0f;
 				UE_LOG(LogTemp, VeryVerbose, TEXT("%s - [MOVE END]"), *Pawn->GetName());
 			}
 			else
@@ -402,6 +418,67 @@ void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	}
 	else
 	{
-		Velocity = FVector::ZeroVector;
+		if (VelocityTimer > 0.0f)
+		{
+			if ((VelocityTimer -= 8.0f * DeltaTime) < 0.0f)
+			{
+				VelocityTimer = 0.0f;
+			}
+			Velocity = FMath::Lerp(Velocity, FVector::ZeroVector, 1.0f - VelocityTimer);
+		}
 	}
+}
+
+EDirections URoguelikeMovementComponent::RotatorToDirection(const FRotator& Rotator) const
+{
+	constexpr const double UP = 0.0;
+	constexpr const double UP_RIGHT = 45.0;
+	constexpr const double RIGHT = 90.0;
+	constexpr const double DOWN_RIGHT = 135.0;
+	constexpr const double DOWN = 180.0;
+	constexpr const double RANGE = 15.0;
+
+	if (Rotator.Yaw >= (UP - RANGE) && Rotator.Yaw < (UP + RANGE))
+		return EDirections::Up;
+	else if (Rotator.Yaw >= (UP_RIGHT - RANGE) && Rotator.Yaw < (UP_RIGHT + RANGE))
+		return EDirections::UpRight;
+	else if (Rotator.Yaw >= (RIGHT - RANGE) && Rotator.Yaw < (RIGHT + RANGE))
+		return EDirections::Right;
+	else if (Rotator.Yaw >= (DOWN_RIGHT - RANGE) && Rotator.Yaw < (DOWN_RIGHT + RANGE))
+		return EDirections::DownRight;
+	else if (Rotator.Yaw >= (DOWN - RANGE) && Rotator.Yaw < (DOWN + RANGE))
+		return EDirections::Down;
+	else if (Rotator.Yaw <= -(UP - RANGE) && Rotator.Yaw > -(UP + RANGE))
+		return EDirections::Up;
+	else if (Rotator.Yaw <= -(UP_RIGHT - RANGE) && Rotator.Yaw > -(UP_RIGHT + RANGE))
+		return EDirections::UpLeft;
+	else if (Rotator.Yaw <= -(RIGHT - RANGE) && Rotator.Yaw > -(RIGHT + RANGE))
+		return EDirections::Left;
+	else if (Rotator.Yaw <= -(DOWN_RIGHT - RANGE) && Rotator.Yaw > -(DOWN_RIGHT + RANGE))
+		return EDirections::DownLeft;
+	else if (Rotator.Yaw <= -(DOWN - RANGE) && Rotator.Yaw > -(DOWN + RANGE))
+		return EDirections::Down;
+	return EDirections::Up;
+}
+
+FRotator URoguelikeMovementComponent::DirectionToRotator(const EDirections& Dir) const
+{
+	constexpr const double UP = 0.0;
+	constexpr const double UP_RIGHT = 45.0;
+	constexpr const double RIGHT = 90.0;
+	constexpr const double DOWN_RIGHT = 135.0;
+	constexpr const double DOWN = 180.0;
+
+	switch (Dir)
+	{
+	case EDirections::Up: return FRotator(0, UP, 0);
+	case EDirections::UpRight: return FRotator(0, UP_RIGHT, 0);
+	case EDirections::Right: return FRotator(0, RIGHT, 0);
+	case EDirections::DownRight: return FRotator(0, DOWN_RIGHT, 0);
+	case EDirections::Down: return FRotator(0, DOWN, 0);
+	case EDirections::UpLeft: return FRotator(0, -UP_RIGHT, 0);
+	case EDirections::Left: return FRotator(0, -RIGHT, 0);
+	case EDirections::DownLeft: return FRotator(0, -DOWN_RIGHT, 0);
+	}
+	return FRotator(0, UP, 0);
 }
