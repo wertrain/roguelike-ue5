@@ -18,10 +18,10 @@ ARoguelikeMapBlock::ARoguelikeMapBlock()
 		ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> MaterialGrid;
 		ConstructorHelpers::FObjectFinderOptional<UMaterialInstance> MaterialHighlight;
 		FConstructorStatics()
-			: BlockMesh(TEXT("/Game/Meshes/SM_Cube.SM_Cube"))
-			, MaterialFloor(TEXT("/Game/Materials/MI_BlockFloor.MI_BlockFloor"))
+			: BlockMesh(TEXT("/Game/Asset/Meshes/SM_Cube.SM_Cube"))
+			, MaterialFloor(TEXT("/Game/Asset/Materials/MI_BlockFloor.MI_BlockFloor"))
 			, MaterialGrid(TEXT("/Game/LevelPrototyping/Materials/MI_PrototypeGrid_Gray.MI_PrototypeGrid_Gray"))
-			, MaterialHighlight(TEXT("/Game/Materials/MI_BlockHighlight.MI_BlockHighlight"))
+			, MaterialHighlight(TEXT("/Game/Asset/Materials/MI_BlockHighlight.MI_BlockHighlight"))
 			//, MaterialGrid(TEXT("/Game/LevelPrototyping/Materials/MI_PrototypeGrid_Gray.MI_PrototypeGrid_Gray"))
 		{
 		}
