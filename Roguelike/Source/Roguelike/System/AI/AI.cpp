@@ -60,7 +60,7 @@ void AI::CommandSearchAdversary(URoguelikeGameSubsystem* RoguelikeGameSubsystem,
 
     TArray<FIntPoint> Points;
     MapFunctions::Dijkstra(
-        *Map, Point, RoguelikeGameSubsystem->GetPlayer()->GetRoguelikeMovementComponent()->GetPoint(), Points);
+        *Map, Point, RoguelikeGameSubsystem->GetPlayer()->GetRoguelikeMovementComponent()->GetNextPoint(), Points);
 
     Map->SetHighlight(Points);
 

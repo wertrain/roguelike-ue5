@@ -162,6 +162,16 @@ void URoguelikeMovementComponent::SetPoint(const FIntPoint Point)
 	}
 }
 
+void URoguelikeMovementComponent::SetDirection(const EDirections NewDirection)
+{
+	Direction = NewDirection;
+
+	if (APawn* const Pawn = GetPawnOwner())
+	{
+		Pawn->SetActorRotation(DirectionToRotator(Direction));
+	}
+}
+
 FIntPoint URoguelikeMovementComponent::GetPoint() const
 {
 	return CurrentPoint;

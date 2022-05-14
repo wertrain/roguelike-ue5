@@ -47,6 +47,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	void SetPoint(const FIntPoint Point);
 	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
+	void SetDirection(const EDirections NewDirection);
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	FIntPoint GetPoint() const;
 	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
 	FIntPoint GetNextPoint() const;

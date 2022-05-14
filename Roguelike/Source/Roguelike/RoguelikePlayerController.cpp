@@ -81,57 +81,79 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 	UGameInstance* GameInstance = GetGameInstance();
 	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
 
-	if (RoguelikeGameSubsystem->IsPlayerTurn() && (bMoveLeft || bMoveRight || bMoveUp || bMoveDown || bEnter))
+	if (RoguelikeGameSubsystem->IsPlayerTurn() && (bMoveLeft || bMoveRight || bMoveUp || bMoveDown || bButtonDown))
 	{
 		if (ARoguelikePawn* const MyPawn = Cast<ARoguelikePawn>(GetPawn()))
 		{
 			FIntPoint CurrentPoint = MyPawn->GetRoguelikeMovementComponent()->GetPoint();
-			if (bMoveLeft)
+			if (bButtonLeft)
 			{
-				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X - 1, CurrentPoint.Y))
+				if (bMoveLeft)
 				{
-					TArray<CommandBase*> Commands;
-					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X - 1, CurrentPoint.Y)));
-					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					MyPawn->GetRoguelikeMovementComponent()->SetDirection(EDirections::Left);
+				}
+				else if (bMoveRight)
+				{
+					MyPawn->GetRoguelikeMovementComponent()->SetDirection(EDirections::Right);
+				}
+				else if (bMoveUp)
+				{
+					MyPawn->GetRoguelikeMovementComponent()->SetDirection(EDirections::Up);
+				}
+				else if (bMoveDown)
+				{
+					MyPawn->GetRoguelikeMovementComponent()->SetDirection(EDirections::Down);
 				}
 			}
-			else if (bMoveRight)
+			else
 			{
-				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X + 1, CurrentPoint.Y))
+				if (bMoveLeft)
 				{
-					TArray<CommandBase*> Commands;
-					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X + 1, CurrentPoint.Y)));
-					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X - 1, CurrentPoint.Y))
+					{
+						TArray<CommandBase*> Commands;
+						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X - 1, CurrentPoint.Y)));
+						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					}
 				}
-			}
-			else if (bMoveUp)
-			{
-				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y - 1))
+				else if (bMoveRight)
 				{
-					TArray<CommandBase*> Commands;
-					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y - 1)));
-					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X + 1, CurrentPoint.Y))
+					{
+						TArray<CommandBase*> Commands;
+						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X + 1, CurrentPoint.Y)));
+						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					}
 				}
-			}
-			else if (bMoveDown)
-			{
-				if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y + 1))
+				else if (bMoveUp)
 				{
-					TArray<CommandBase*> Commands;
-					Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y + 1)));
-					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y - 1))
+					{
+						TArray<CommandBase*> Commands;
+						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y - 1)));
+						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					}
 				}
-			}
-			else if (bEnter)
-			{
-				MyPawn->SetAnimationFlag(ECharacterAnimationFlag::AttackPunch, true);
+				else if (bMoveDown)
+				{
+					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y + 1))
+					{
+						TArray<CommandBase*> Commands;
+						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y + 1)));
+						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					}
+				}
+				else if (bButtonDown)
+				{
+					MyPawn->SetAnimationFlag(ECharacterAnimationFlag::AttackPunch, true);
 
-				TArray<ARoguelikePawn*> Enemys;
-				RoguelikeGameSubsystem->GetPawns(EFactions::Enemys, Enemys);
+					TArray<ARoguelikePawn*> Enemys;
+					RoguelikeGameSubsystem->GetPawns(EFactions::Enemys, Enemys);
 
-				TArray<CommandBase*> Commands;
-				Commands.Add(new DamageCommand(MyPawn, Enemys[0]));
-				RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+					TArray<CommandBase*> Commands;
+					Commands.Add(new DamageCommand(MyPawn, Enemys[0]));
+					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+				}
 			}
 		}
 	}
@@ -151,8 +173,10 @@ void ARoguelikePlayerController::SetupInputComponent()
 	InputComponent->BindAction("CursorLeft", IE_Released, this, &ARoguelikePlayerController::OnReleasedLeft);
 	InputComponent->BindAction("CursorRight", IE_Pressed, this, &ARoguelikePlayerController::OnPressedRight);
 	InputComponent->BindAction("CursorRight", IE_Released, this, &ARoguelikePlayerController::OnReleasedRight);
-	InputComponent->BindAction("ButtonDown", IE_Pressed, this, &ARoguelikePlayerController::OnPressedEnter);
-	InputComponent->BindAction("ButtonDown", IE_Released, this, &ARoguelikePlayerController::OnReleasedEnter);
+	InputComponent->BindAction("ButtonLeft", IE_Pressed, this, &ARoguelikePlayerController::OnPressedButtonLeft);
+	InputComponent->BindAction("ButtonLeft", IE_Released, this, &ARoguelikePlayerController::OnReleasedButtonLeft);
+	InputComponent->BindAction("ButtonDown", IE_Pressed, this, &ARoguelikePlayerController::OnPressedButtonDown);
+	InputComponent->BindAction("ButtonDown", IE_Released, this, &ARoguelikePlayerController::OnReleasedButtonDown);
 
 	//InputComponent->BindAction("SetDestination", IE_Pressed, this, &ARoguelikePlayerController::OnSetDestinationPressed);
 	//InputComponent->BindAction("SetDestination", IE_Released, this, &ARoguelikePlayerController::OnSetDestinationReleased);
@@ -166,12 +190,14 @@ void ARoguelikePlayerController::OnPressedUp() { bMoveUp = true; }
 void ARoguelikePlayerController::OnPressedDown() { bMoveDown = true; }
 void ARoguelikePlayerController::OnPressedLeft() { bMoveLeft = true; }
 void ARoguelikePlayerController::OnPressedRight() { bMoveRight = true; }
-void ARoguelikePlayerController::OnPressedEnter() { bEnter = true; }
+void ARoguelikePlayerController::OnPressedButtonLeft() { bButtonLeft = true; }
+void ARoguelikePlayerController::OnPressedButtonDown() { bButtonDown = true; }
 void ARoguelikePlayerController::OnReleasedUp() { bMoveUp = false; }
 void ARoguelikePlayerController::OnReleasedDown() { bMoveDown = false; }
 void ARoguelikePlayerController::OnReleasedLeft() { bMoveLeft = false; }
 void ARoguelikePlayerController::OnReleasedRight() { bMoveRight = false; }
-void ARoguelikePlayerController::OnReleasedEnter() { bEnter = false; }
+void ARoguelikePlayerController::OnReleasedButtonLeft() { bButtonLeft = false; }
+void ARoguelikePlayerController::OnReleasedButtonDown() { bButtonDown = false; }
 
 void ARoguelikePlayerController::OnSetDestinationPressed()
 {

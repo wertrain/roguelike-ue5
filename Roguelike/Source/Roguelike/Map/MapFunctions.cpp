@@ -23,7 +23,8 @@ struct LinkedNode
 	LinkedNode* NextLink;
 };
 
-static LinkedNode NodePool[1024*1024*16];
+static constexpr const size_t NodePoolNum = 1024 * 1024;
+static LinkedNode NodePool[NodePoolNum];
 
 }
 
@@ -100,7 +101,9 @@ void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Sta
 				NodeMap[CheckIndex].PrevNode = Node;
 			}
 
-			auto NextLink = &NodePool[LinkIndex++];
+			auto NextLink = &NodePool[LinkIndex];
+			if (NodePoolNum <= ++LinkIndex)
+				break;
 			NextLink->Node = &NodeMap[CheckIndex];
 			NextLink->NextLink = nullptr;
 
@@ -140,6 +143,7 @@ void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Sta
 				TraceNodes.Add(CheckNode);
 				CheckNode = CheckNode->PrevNode;
 			}
+			TraceNodes.Remove(GoalNode);
 
 			Algo::Reverse(TraceNodes);
 			for (auto* Node : TraceNodes)
