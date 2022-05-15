@@ -13,6 +13,8 @@ class ROGUELIKE_API APlacedObject : public AActor
 
 public:
 	APlacedObject();
+	void SetRoguelikeMap(class ARoguelikeMap* RoguelikeMap);
+	const FIntPoint& GetPoint();
 
 protected:
 	class ARoguelikeMap* RoguelikeMap;

@@ -152,6 +152,7 @@ void URoguelikeMovementComponent::SetPoint(const FIntPoint Point)
 	if (APawn* const Pawn = GetPawnOwner())
 	{
 		CurrentPoint = Point;
+		NextPoint = Point;
 		RoguelikeMap->ResetPawnPoint(Pawn, CurrentPoint);
 
 		auto NewLocation = RoguelikeMap->GetLocationOnGrid(Point.X, Point.Y);
@@ -306,20 +307,11 @@ ARoguelikeMap* URoguelikeMovementComponent::GetRoguelikeMap() const
 	return RoguelikeMap;
 }
 
-void URoguelikeMovementComponent::InitializeComponent()
-{
-	Super::InitializeComponent();
-
-	if ((RoguelikeMap = Cast<ARoguelikeMap>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoguelikeMap::StaticClass()))) == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s - RoguelikeMap is not found."), *GetOwner()->GetName());
-	}
-}
-
 void URoguelikeMovementComponent::OnComponentCreated()
 {
 	Super::OnComponentCreated();
 
+	// ƒŒƒxƒ‹ã‚É”z’u‚³‚ê‚Ä‚¢‚éê‡‚Í‚±‚±‚ÅE‚í‚ê‚é
 	if ((RoguelikeMap = Cast<ARoguelikeMap>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoguelikeMap::StaticClass()))) == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s - RoguelikeMap is not found."), *GetOwner()->GetName());

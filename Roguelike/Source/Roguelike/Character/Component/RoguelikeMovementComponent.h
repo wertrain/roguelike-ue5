@@ -76,7 +76,6 @@ public:
 	class ARoguelikeMap* GetRoguelikeMap() const;
 
 protected:
-	virtual void InitializeComponent() override;
 	virtual void OnComponentCreated() override;
 	virtual void AddInputVector(FVector WorldVector, bool bForce) override;
 	virtual void BeginPlay() override;

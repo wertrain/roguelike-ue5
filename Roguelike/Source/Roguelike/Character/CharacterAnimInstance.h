@@ -11,6 +11,8 @@ UENUM(Blueprintable)
 enum class ECharacterAnimMontageFlag : uint8
 {
 	Damage UMETA(DisplayName = "Damage"),
+	Attack UMETA(DisplayName = "Attack"),
+	AttackSlash UMETA(DisplayName = "Attack Slash"),
 	Num UMETA(Hidden)
 };
 

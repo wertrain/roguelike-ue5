@@ -32,7 +32,7 @@ ARoguelikePawn::ARoguelikePawn()
 void ARoguelikePawn::BeginPlay()
 {
 	Super::BeginPlay();
-	RoguelikeMovementComponent->SetPoint(InitialPoint);
+	//RoguelikeMovementComponent->SetPoint(InitialPoint);
 
 	CurrentStatus = OriginalStatus;
 

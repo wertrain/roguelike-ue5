@@ -43,19 +43,23 @@ void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Sta
 
 	TArray<Node> NodeMap;
 	{
-		int32 Index = 0;
-		for (const auto& Value : Map.GetCollisionMap())
+		for (int32 Index = 0, Max = Map.GetCollisionMap().Num(); Index < Max; ++Index)
 		{
 			Node node;
 			node.X = Index % MapHeight;
 			node.Y = Index / MapWidth;
 			node.PrevNode = nullptr;
 			node.Score = 0xFFFF;
-			node.Pass = Value == 0;
+			node.Pass = Map.CanPass(Index);
 			node.Checked = false;
 			NodeMap.Add(node);
-			++Index;
 		}
+	}
+	// ‚¢‚Á‚½‚ñ–Ú•WˆÊ’u‚Í’Ê‚ê‚é‚æ‚¤‚É‚µ‚Ä‚¨‚­
+	for (auto& Goal : Goals)
+	{
+		const int GoalIndex = (MapWidth * Goal.Y) + Goal.X;
+		NodeMap[GoalIndex].Pass = true;
 	}
 
 	//TArray<Node*> SearchNodeList;
@@ -143,7 +147,7 @@ void MapFunctions::Dijkstra(const class ARoguelikeMap& Map, const FIntPoint& Sta
 				TraceNodes.Add(CheckNode);
 				CheckNode = CheckNode->PrevNode;
 			}
-			TraceNodes.Remove(GoalNode);
+			//TraceNodes.Remove(GoalNode);
 
 			Algo::Reverse(TraceNodes);
 			for (auto* Node : TraceNodes)

@@ -12,6 +12,38 @@
 #include "Roguelike/Map/MapFunctions.h"
 #include "Roguelike/Map/RoguelikeMap.h"
 
+namespace
+{
+
+bool CheckNeighbor(FIntPoint Point, FIntPoint TargetPoint)
+{
+    if (TargetPoint.X == Point.X)
+    {
+        if (Point.Y + 1 == TargetPoint.Y)
+        {
+            return true;
+        }
+        else if (Point.Y - 1 == TargetPoint.Y)
+        {
+            return true;
+        }
+    }
+    else if (TargetPoint.Y == Point.Y)
+    {
+        if (Point.X + 1 == TargetPoint.X)
+        {
+            return true;
+        }
+        else if (Point.X - 1 == TargetPoint.X)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+}
+
 void AI::CreateCommands(URoguelikeGameSubsystem* RoguelikeGameSubsystem, ARoguelikePawn* Pawn, TArray<CommandBase*>& Commands)
 {
     // プレイヤーが操作する場合はスキップ
@@ -25,14 +57,10 @@ void AI::CreateCommands(URoguelikeGameSubsystem* RoguelikeGameSubsystem, ARoguel
     {
         bool IsSearch = false;
         {
-            URoguelikeMovementComponent* RoguelikeMovementComponent = Pawn->GetRoguelikeMovementComponent();
-            FIntPoint Point = RoguelikeMovementComponent->GetPoint();
-            ARoguelikeMap* Map = RoguelikeMovementComponent->GetRoguelikeMap();
+            FIntPoint Point = Pawn->GetRoguelikeMovementComponent()->GetPoint();
+            FIntPoint TargetPoint = RoguelikeGameSubsystem->GetPlayer()->GetRoguelikeMovementComponent()->GetNextPoint();
 
-            IsSearch = Map->GetPawn(Point.X + 1, Point.Y) == nullptr &&
-                       Map->GetPawn(Point.X - 1, Point.Y) == nullptr &&
-                       Map->GetPawn(Point.X, Point.Y + 1) == nullptr &&
-                       Map->GetPawn(Point.X, Point.Y - 1) == nullptr;
+            IsSearch = !CheckNeighbor(Point, TargetPoint);
         }
 
         if (IsSearch)

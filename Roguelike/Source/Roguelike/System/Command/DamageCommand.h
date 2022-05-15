@@ -19,11 +19,8 @@ public:
 	virtual void Execute() override;
 	virtual bool IsFinished() override;
 	virtual bool IsSync() override { return true; }
-	virtual void Update(float DeltaTime);
 
 private:
 	class ARoguelikePawn* AttackPawn;
 	class ARoguelikePawn* DamagedPawn;
-	bool PlayedAnim;
-	float PlayAnimTimer;
 };

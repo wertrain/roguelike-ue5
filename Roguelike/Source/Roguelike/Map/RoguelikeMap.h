@@ -21,10 +21,14 @@ public:
 	void CreateNewMap();
 
 	FVector GetLocationOnGrid(int X, int Y) const;
-	bool CanPass(int X, int Y);
+	bool CanPass(int X, int Y) const;
+	bool CanPass(int Index) const;
 	void ResetPawnPoint(class APawn* Pawn, const FIntPoint Point);
 	void UpdatePawnPoint(class APawn* Pawn, const FIntPoint OldPoint, const FIntPoint NewPoint);
 	const class APawn* GetPawn(int X, int Y) const;
+	class APlacedObject* GetPlacedObject(int X, int Y) const;
+	bool PutItem(class APlacedItem* Item, int X, int Y);
+	bool RemoveItem(class APlacedItem* Item);
 
 	void SetHighlight(TArray<FIntPoint> Points);
 	void ResetHighlight();
@@ -54,4 +58,5 @@ private:
 	TArray<uint32> Map;
 	TArray<uint32> CollisionMap;
 	TArray<class APawn*> PawnMap;
+	TArray<class APlacedObject*> PlacedMap;
 };

@@ -10,8 +10,6 @@ DamageCommand::DamageCommand(class ARoguelikePawn* Attack, class ARoguelikePawn*
     : CommandBase()
     , AttackPawn(Attack)
     , DamagedPawn(Damaged)
-    , PlayedAnim(false)
-    , PlayAnimTimer(0)
 {
     check(AttackPawn != nullptr);
     check(DamagedPawn != nullptr);
@@ -23,21 +21,14 @@ DamageCommand::~DamageCommand()
 
 void DamageCommand::Execute()
 {
-#if false
     if (UCharacterAnimInstance* AnimInstance = DamagedPawn->GetAnimInstance())
     {
         AnimInstance->PlayAnimMontage(ECharacterAnimMontageFlag::Damage);
     }
-#endif
 }
 
 bool DamageCommand::IsFinished()
 {
-    if (!PlayedAnim)
-    {
-        return false;
-    }
-
     if (UCharacterAnimInstance* AnimInstance = DamagedPawn->GetAnimInstance())
     {
         return !AnimInstance->IsPlayingAnimMontage(ECharacterAnimMontageFlag::Damage);
@@ -45,19 +36,4 @@ bool DamageCommand::IsFinished()
     checkNoEntry();
 
     return false;
-}
-
-void DamageCommand::Update(float DeltaTime)
-{
-    if (!PlayedAnim)
-    {
-        if ((PlayAnimTimer += DeltaTime) >= 0.5f)
-        {
-            if (UCharacterAnimInstance* AnimInstance = DamagedPawn->GetAnimInstance())
-            {
-                AnimInstance->PlayAnimMontage(ECharacterAnimMontageFlag::Damage);
-                PlayedAnim = true;
-            }
-        }
-    }
 }

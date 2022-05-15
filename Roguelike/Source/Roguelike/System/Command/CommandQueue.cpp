@@ -3,6 +3,7 @@
 
 #include "CommandQueue.h"
 #include "Roguelike/System/Command/CommandBase.h"
+#include "Roguelike/System/Command/CommandUtility.h"
 
 CommandQueue::CommandQueue()
     : Commands()
@@ -108,6 +109,7 @@ void CommandQueue::Update(const float DeltaTime)
         for (auto* Command : FinishedCommands)
         {
             CurrentCommands.Remove(Command);
+            CommandUtility::DestroyCommand(Command);
         }
     }
 #endif
@@ -145,6 +147,7 @@ bool CommandQueue::UpdateCurrentCommand(const float DeltaTime)
         for (auto* Command : FinishedCommands)
         {
             CurrentCommands.Remove(Command);
+            CommandUtility::DestroyCommand(Command);
         }
     }
     return CurrentCommands.IsEmpty();

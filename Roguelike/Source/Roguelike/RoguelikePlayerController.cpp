@@ -14,8 +14,7 @@
 #include "Roguelike/Character/RoguelikePawn.h"
 #include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
 #include "Roguelike/System/RoguelikeGameSubsystem.h"
-#include "Roguelike/System/Command/MovementCommand.h"
-#include "Roguelike/System/Command/DamageCommand.h"
+#include "Roguelike/System/Command/CommandUtility.h"
 
 ARoguelikePlayerController::ARoguelikePlayerController()
 {
@@ -107,53 +106,62 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 			}
 			else
 			{
+				bool PlayerMoved = false;
+				FIntPoint NextPoint;
+
 				if (bMoveLeft)
 				{
 					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X - 1, CurrentPoint.Y))
 					{
-						TArray<CommandBase*> Commands;
-						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X - 1, CurrentPoint.Y)));
-						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+						PlayerMoved = true;
+						NextPoint = FIntPoint(CurrentPoint.X - 1, CurrentPoint.Y);
 					}
 				}
 				else if (bMoveRight)
 				{
 					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X + 1, CurrentPoint.Y))
 					{
-						TArray<CommandBase*> Commands;
-						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X + 1, CurrentPoint.Y)));
-						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+						PlayerMoved = true;
+						NextPoint = FIntPoint(CurrentPoint.X + 1, CurrentPoint.Y);
 					}
 				}
 				else if (bMoveUp)
 				{
 					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y - 1))
 					{
-						TArray<CommandBase*> Commands;
-						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y - 1)));
-						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+						PlayerMoved = true;
+						NextPoint = FIntPoint(CurrentPoint.X, CurrentPoint.Y - 1);
 					}
 				}
 				else if (bMoveDown)
 				{
 					if (MyPawn->GetRoguelikeMovementComponent()->GetRoguelikeMap()->CanPass(CurrentPoint.X, CurrentPoint.Y + 1))
 					{
-						TArray<CommandBase*> Commands;
-						Commands.Add(new MovementCommand(MyPawn, FIntPoint(CurrentPoint.X, CurrentPoint.Y + 1)));
-						RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+						PlayerMoved = true;
+						NextPoint = FIntPoint(CurrentPoint.X, CurrentPoint.Y + 1);
 					}
+				}
+
+				if (PlayerMoved)
+				{
+					TArray<CommandBase*> Commands;
+					CommandUtility::CreateMovementCommand(Commands, MyPawn, NextPoint);
+					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
 				}
 				else if (bButtonDown)
 				{
-					MyPawn->SetAnimationFlag(ECharacterAnimationFlag::AttackPunch, true);
+					TArray<CommandBase*> Commands;
+					CommandUtility::CreateAttackCommand(Commands, MyPawn);
 
 					TArray<ARoguelikePawn*> Enemys;
 					RoguelikeGameSubsystem->GetPawns(EFactions::Enemys, Enemys);
-
-					TArray<CommandBase*> Commands;
-					Commands.Add(new DamageCommand(MyPawn, Enemys[0]));
+					if (Enemys.Num() > 0)
+					{
+						CommandUtility::CreateDamageCommand(Commands, MyPawn, Enemys[0]);
+					}
 					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
 				}
+
 			}
 		}
 	}
