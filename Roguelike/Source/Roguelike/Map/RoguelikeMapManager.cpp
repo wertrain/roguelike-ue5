@@ -72,6 +72,7 @@ void ARoguelikeMapManager::BeginPlay()
 	Player->GetRoguelikeMovementComponent()->SetRoguelikeMap(CurrentMap);
 	Player->GetRoguelikeMovementComponent()->SetPoint(FIntPoint(5, 5));
 
+	// “G‚Ì¶¬
 	{
 		TArray<ARoguelikePawn*> Enemys;
 		for (int Index = 0; Index < param.EnemyNum; ++Index)

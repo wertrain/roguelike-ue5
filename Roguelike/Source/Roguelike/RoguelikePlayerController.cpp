@@ -153,11 +153,17 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 					TArray<CommandBase*> Commands;
 					CommandUtility::CreateAttackCommand(Commands, MyPawn);
 
-					TArray<ARoguelikePawn*> Enemys;
-					RoguelikeGameSubsystem->GetPawns(EFactions::Enemys, Enemys);
-					if (Enemys.Num() > 0)
+					auto* MovementComponent = MyPawn->GetRoguelikeMovementComponent();
+					auto* RoguelikeMap = MovementComponent->GetRoguelikeMap();
+
+					const auto& FrontPoint = MovementComponent->GetFrontPoint();
+					if (auto* DamagedPawn = RoguelikeMap->GetRoguelikePawn(FrontPoint.X, FrontPoint.Y))
 					{
-						CommandUtility::CreateDamageCommand(Commands, MyPawn, Enemys[0]);
+						// Ž©•ª‚ÆˆÙ‚È‚é¨—Í‚Å‚ ‚ê‚Îƒ_ƒ[ƒW‚ð—^‚¦‚é
+						if (DamagedPawn->GetCurrentStatus().Faction != MyPawn->GetCurrentStatus().Faction)
+						{
+							CommandUtility::CreateDamageCommand(Commands, MyPawn, DamagedPawn);
+						}
 					}
 					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
 				}

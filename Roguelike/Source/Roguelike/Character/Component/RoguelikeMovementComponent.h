@@ -74,9 +74,16 @@ public:
 	FVector GetNextLocation() const;
 	/** マップを取得する */
 	class ARoguelikeMap* GetRoguelikeMap() const;
+	/** 自分の前面の位置を取得する */
+	FIntPoint GetFrontPoint() const;
+	/** 次の仮移動座標を設定する（AIが行動を判定するときに使用するもので、実際の移動とは無関係） */
+	void SetTempNextPoint(const FIntPoint Point);
+	/** 次の仮移動座標を取得する */
+	FIntPoint GetTempNextPoint() const;
 
 protected:
 	virtual void OnComponentCreated() override;
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 	virtual void AddInputVector(FVector WorldVector, bool bForce) override;
 	virtual void BeginPlay() override;
 
@@ -91,6 +98,7 @@ private:
 	class ARoguelikeMap* RoguelikeMap;
 	FIntPoint CurrentPoint;
 	FIntPoint NextPoint;
+	FIntPoint TempNextPoint;
 	FVector CurrentLocation;
 	FVector NextLocation;
 	MoveStates States;

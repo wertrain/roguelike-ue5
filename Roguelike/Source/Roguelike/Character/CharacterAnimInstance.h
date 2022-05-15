@@ -30,7 +30,7 @@ public:
 	virtual void NativePostEvaluateAnimation() override;
 	virtual void NativeUninitializeAnimation() override;
 	virtual void NativeBeginPlay() override;
-	
+
 public:
 	UPROPERTY(EditAnywhere, Category = "Roguelike|Character")
 	class UAnimMontage* AnimMontageAssets[static_cast<size_t>(ECharacterAnimMontageFlag::Num)];
@@ -41,7 +41,24 @@ public:
 	bool PlayAnimMontage(const ECharacterAnimMontageFlag Flag);
 	bool IsPlayingAnimMontage(const ECharacterAnimMontageFlag Flag);
 
+	// 次のステートを監視する
+	bool WatchNextState();
+	// 監視していた次のステートの終了をチェックする
+	bool IsWatchStateHasEnded() const;
+
+	void OnEntryState(const struct FAnimNode_StateMachine& Machine, int32 PrevStateIndex, int32 NextStateIndex);
+	void OnExitState(const struct FAnimNode_StateMachine& Machine, int32 PrevStateIndex, int32 NextStateIndex);
+
 private:
+	enum class EWatchStateFlag
+	{
+		Nop,
+		WaitWatch,
+		Watching,
+		WatchStateHasEnded
+	};
+
 	class ICharacterAnimator* CharacterAnimator;
 	bool AnimationFlag[static_cast<size_t>(ECharacterAnimationFlag::Num)];
+	EWatchStateFlag WatchStateFlag;
 };

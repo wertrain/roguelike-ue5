@@ -16,7 +16,7 @@
 // Sets default values
 ARoguelikePawn::ARoguelikePawn()
 	: PlayerIndex(-1)
-	, InitialPoint(5, 5)
+	, InitialPoint(0, 0)
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -41,6 +41,15 @@ void ARoguelikePawn::BeginPlay()
 	RoguelikeGameSubsystem->AddPawn(CurrentStatus.Faction, this);
 }
 
+void ARoguelikePawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	UGameInstance* GameInstance = GetGameInstance();
+	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
+	RoguelikeGameSubsystem->RemovePawn(this);
+}
+
 // Called every frame
 void ARoguelikePawn::Tick(float DeltaTime)
 {
@@ -57,4 +66,9 @@ UCharacterAnimInstance* ARoguelikePawn::GetAnimInstance() const
 {
 	USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetComponentByClass(USkeletalMeshComponent::StaticClass()));
 	return Cast<UCharacterAnimInstance>(SkeletalMeshComponent->GetAnimInstance());
+}
+
+FCharacterStatus& ARoguelikePawn::GetCurrentStatus()
+{
+	return CurrentStatus;
 }

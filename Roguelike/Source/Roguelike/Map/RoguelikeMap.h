@@ -25,7 +25,9 @@ public:
 	bool CanPass(int Index) const;
 	void ResetPawnPoint(class APawn* Pawn, const FIntPoint Point);
 	void UpdatePawnPoint(class APawn* Pawn, const FIntPoint OldPoint, const FIntPoint NewPoint);
+	bool RemovePawnPoint(class APawn* Pawn, const FIntPoint Point);
 	const class APawn* GetPawn(int X, int Y) const;
+	class ARoguelikePawn* GetRoguelikePawn(int X, int Y);
 	class APlacedObject* GetPlacedObject(int X, int Y) const;
 	bool PutItem(class APlacedItem* Item, int X, int Y);
 	bool RemoveItem(class APlacedItem* Item);
@@ -35,6 +37,8 @@ public:
 
 	const TArray<uint32>& GetMap() const { return Map; }
 	const TArray<uint32>& GetCollisionMap() const { return CollisionMap; }
+	const TArray<class APawn*>& GetPawnMap() const { return PawnMap; }
+	const TArray<class APlacedObject*>& GetPlacedMap() const { return PlacedMap; }
 	int32 GetWidth() const { return MapWidth; }
 	int32 GetHeight() const { return MapHeight; }
 

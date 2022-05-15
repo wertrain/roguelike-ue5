@@ -17,6 +17,7 @@ MovementCommand::MovementCommand(class ARoguelikePawn* Pawn, const FIntPoint& Po
     {
         RoguelikeMovementComponent->GetRoguelikeMap()->UpdatePawnPoint(
             Pawn, RoguelikeMovementComponent->GetPoint(), NextPoint);
+        RoguelikeMovementComponent->SetTempNextPoint(NextPoint);
     }
 }
 

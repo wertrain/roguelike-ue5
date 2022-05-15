@@ -11,6 +11,18 @@ void UCharacterAnimInstance::NativeInitializeAnimation()
     {
         CharacterAnimator = Animator;
     }
+
+    if (const FBakedAnimationStateMachine* AnimationStateMachine = GetStateMachineInstanceDesc(TEXT("New State Machine")))
+    {
+        for (auto& State : AnimationStateMachine->States)
+        {
+            // 開始/離脱イベントをバインド
+            AddNativeStateEntryBinding(AnimationStateMachine->MachineName, State.StateName, FOnGraphStateChanged::CreateUObject(this, &UCharacterAnimInstance::OnEntryState));
+            AddNativeStateExitBinding(AnimationStateMachine->MachineName, State.StateName, FOnGraphStateChanged::CreateUObject(this, &UCharacterAnimInstance::OnExitState));
+        }
+    }
+
+    WatchStateFlag = EWatchStateFlag::Nop;
 }
 
 void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -56,4 +68,38 @@ bool UCharacterAnimInstance::PlayAnimMontage(const ECharacterAnimMontageFlag Fla
 bool UCharacterAnimInstance::IsPlayingAnimMontage(const ECharacterAnimMontageFlag Flag)
 {
     return Montage_IsPlaying(AnimMontageAssets[static_cast<size_t>(Flag)]);
+}
+
+bool UCharacterAnimInstance::WatchNextState()
+{
+    // 次のステートの終了を判定する簡易的な仕組みを開始
+    if (WatchStateFlag == EWatchStateFlag::Nop ||
+        WatchStateFlag == EWatchStateFlag::WatchStateHasEnded)
+    {
+        WatchStateFlag = EWatchStateFlag::WaitWatch;
+
+        return true;
+    }
+    return false;
+}
+
+bool UCharacterAnimInstance::IsWatchStateHasEnded() const
+{
+    return WatchStateFlag == EWatchStateFlag::WatchStateHasEnded;
+}
+
+void UCharacterAnimInstance::OnEntryState(const struct FAnimNode_StateMachine& Machine, int32 PrevStateIndex, int32 NextStateIndex)
+{
+    if (WatchStateFlag == EWatchStateFlag::WaitWatch)
+    {
+        WatchStateFlag = EWatchStateFlag::Watching;
+    }
+}
+
+void UCharacterAnimInstance::OnExitState(const struct FAnimNode_StateMachine& Machine, int32 PrevStateIndex, int32 NextStateIndex)
+{
+    if (WatchStateFlag == EWatchStateFlag::Watching)
+    {
+        WatchStateFlag = EWatchStateFlag::WatchStateHasEnded;
+    }
 }

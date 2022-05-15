@@ -3,6 +3,7 @@
 
 #include "Roguelike/System/AI/AI.h"
 #include "Roguelike/System/Command/CommandBase.h"
+#include "Roguelike/System/Command/CommandUtility.h"
 #include "Roguelike/System/Command/MovementCommand.h"
 #include "Roguelike/System/Command/DamageCommand.h"
 #include "Roguelike/System/RoguelikeGameSubsystem.h"
@@ -52,18 +53,25 @@ void AI::CreateCommands(URoguelikeGameSubsystem* RoguelikeGameSubsystem, ARoguel
         return;
     }
 
-    int NumOfActions = Pawn->OriginalStatus.NumberOfActions;
+    // すでに倒されていたらスキップ
+    if (Pawn->GetCurrentStatus().HealthPoint <= 0)
+    {
+        return;
+    }
+
+    int NumOfActions = Pawn->GetCurrentStatus().NumberOfActions;
     while (NumOfActions > 0)
     {
-        bool IsSearch = false;
+        FIntPoint Point = Pawn->GetRoguelikeMovementComponent()->GetPoint();
+        auto* Player = RoguelikeGameSubsystem->GetPlayer();
+        FIntPoint TargetPoint = Player->GetRoguelikeMovementComponent()->GetTempNextPoint();
+
+        if (CheckNeighbor(Point, TargetPoint))
         {
-            FIntPoint Point = Pawn->GetRoguelikeMovementComponent()->GetPoint();
-            FIntPoint TargetPoint = RoguelikeGameSubsystem->GetPlayer()->GetRoguelikeMovementComponent()->GetNextPoint();
-
-            IsSearch = !CheckNeighbor(Point, TargetPoint);
+            CommandUtility::CreateAttackCommand(Commands, Pawn);
+            CommandUtility::CreateDamageCommand(Commands, Pawn, Player);
         }
-
-        if (IsSearch)
+        else
         {
             CommandSearchAdversary(RoguelikeGameSubsystem, Pawn, Commands);
         }
@@ -88,9 +96,10 @@ void AI::CommandSearchAdversary(URoguelikeGameSubsystem* RoguelikeGameSubsystem,
 
     TArray<FIntPoint> Points;
     MapFunctions::Dijkstra(
-        *Map, Point, RoguelikeGameSubsystem->GetPlayer()->GetRoguelikeMovementComponent()->GetNextPoint(), Points);
+        *Map, Point, 
+        RoguelikeGameSubsystem->GetPlayer()->GetRoguelikeMovementComponent()->GetTempNextPoint(), Points);
 
-    Map->SetHighlight(Points);
+    //Map->SetHighlight(Points);
 
     if (Points.Num() > 1)
     {

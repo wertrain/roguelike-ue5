@@ -125,6 +125,7 @@ URoguelikeMovementComponent::URoguelikeMovementComponent()
 	, RoguelikeMap(nullptr)
 	, CurrentPoint()
 	, NextPoint()
+	, TempNextPoint()
 	, CurrentLocation()
 	, NextLocation()
 	, States()
@@ -152,13 +153,14 @@ void URoguelikeMovementComponent::SetPoint(const FIntPoint Point)
 	if (APawn* const Pawn = GetPawnOwner())
 	{
 		CurrentPoint = Point;
-		NextPoint = Point;
+		//NextPoint = Point;
+		TempNextPoint = Point;
 		RoguelikeMap->ResetPawnPoint(Pawn, CurrentPoint);
 
 		auto NewLocation = RoguelikeMap->GetLocationOnGrid(Point.X, Point.Y);
 		NewLocation.Z = GetActorLocation().Z;
 		CurrentLocation = NewLocation;
-		NextLocation = NewLocation;
+		//NextLocation = NewLocation;
 		Pawn->SetActorLocation(NewLocation);
 	}
 }
@@ -307,6 +309,32 @@ ARoguelikeMap* URoguelikeMovementComponent::GetRoguelikeMap() const
 	return RoguelikeMap;
 }
 
+FIntPoint URoguelikeMovementComponent::GetFrontPoint() const
+{
+	switch (Direction)
+	{
+	case EDirections::Left:
+		return FIntPoint(CurrentPoint.X - 1, CurrentPoint.Y);
+	case EDirections::Right:
+		return FIntPoint(CurrentPoint.X + 1, CurrentPoint.Y);
+	case EDirections::Up:
+		return FIntPoint(CurrentPoint.X, CurrentPoint.Y - 1);
+	case EDirections::Down:
+		return FIntPoint(CurrentPoint.X, CurrentPoint.Y + 1);
+	}
+	return CurrentPoint;
+}
+
+void URoguelikeMovementComponent::SetTempNextPoint(const FIntPoint Point)
+{
+	TempNextPoint = Point;
+}
+
+FIntPoint URoguelikeMovementComponent::GetTempNextPoint() const
+{
+	return TempNextPoint;
+}
+
 void URoguelikeMovementComponent::OnComponentCreated()
 {
 	Super::OnComponentCreated();
@@ -315,6 +343,19 @@ void URoguelikeMovementComponent::OnComponentCreated()
 	if ((RoguelikeMap = Cast<ARoguelikeMap>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoguelikeMap::StaticClass()))) == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s - RoguelikeMap is not found."), *GetOwner()->GetName());
+	}
+}
+
+void URoguelikeMovementComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+
+	if (RoguelikeMap)
+	{
+		if (!RoguelikeMap->RemovePawnPoint(GetPawnOwner(), CurrentPoint))
+		{
+			RoguelikeMap->RemovePawnPoint(GetPawnOwner(), NextPoint);
+		}
 	}
 }
 

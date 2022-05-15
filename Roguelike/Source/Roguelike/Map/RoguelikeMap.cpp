@@ -3,8 +3,6 @@
 #include "Roguelike/Map/RoguelikeMapBlock.h"
 #include "Roguelike/Map/MapDefinitions.h"
 #include "Roguelike/Map/PlacedItem.h"
-#include "Roguelike/RoguelikePlayerController.h"
-#include "Roguelike/RoguelikeCharacter.h"
 #include "Roguelike/Character/RoguelikePawn.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -132,6 +130,18 @@ void ARoguelikeMap::UpdatePawnPoint(class APawn* Pawn, const FIntPoint OldPoint,
 	PawnMap[PointToIndex(NewPoint)] = Pawn;
 }
 
+bool ARoguelikeMap::RemovePawnPoint(class APawn* Pawn, const FIntPoint Point)
+{
+	int32 Index = PointToIndex(Point);
+
+	if (PawnMap[Index] == Pawn)
+	{
+		PawnMap[Index] = nullptr;
+		return true;
+	}
+	return false;
+}
+
 const APawn* ARoguelikeMap::GetPawn(const int X, const int Y) const
 {
 	if (X < 0 || MapWidth <= X || Y < 0 || MapHeight <= Y)
@@ -139,6 +149,15 @@ const APawn* ARoguelikeMap::GetPawn(const int X, const int Y) const
 		return nullptr;
 	}
 	return PawnMap[PointToIndex(X, Y)];
+}
+
+ARoguelikePawn* ARoguelikeMap::GetRoguelikePawn(int X, int Y)
+{
+	if (X < 0 || MapWidth <= X || Y < 0 || MapHeight <= Y)
+	{
+		return nullptr;
+	}
+	return Cast<ARoguelikePawn>(PawnMap[PointToIndex(X, Y)]);
 }
 
 APlacedObject* ARoguelikeMap::GetPlacedObject(const int X, const int Y) const

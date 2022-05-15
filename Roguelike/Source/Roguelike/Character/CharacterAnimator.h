@@ -11,6 +11,7 @@ enum class ECharacterAnimationFlag : uint8
 {
 	AttackPunch UMETA(DisplayName = "Attack Punch"),
 	Damage UMETA(DisplayName = "Damage"),
+	Die UMETA(DisplayName = "Die"),
     Num UMETA(Hidden)
 };
 

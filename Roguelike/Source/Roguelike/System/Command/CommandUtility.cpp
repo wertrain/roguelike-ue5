@@ -4,6 +4,7 @@
 #include "Roguelike/System/Command/CommandBase.h"
 #include "Roguelike/System/Command/MovementCommand.h"
 #include "Roguelike/System/Command/DamageCommand.h"
+#include "Roguelike/System/Command/DieCommand.h"
 #include "Roguelike/System/Command/ItemGetCommand.h"
 #include "Roguelike/System/Command/AttackCommand.h"
 #include "Roguelike/Character/RoguelikePawn.h"
@@ -41,7 +42,26 @@ void CommandUtility::CreateAttackCommand(TArray<class CommandBase*>& Commands, c
 
 void CommandUtility::CreateDamageCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker, class ARoguelikePawn* Defender)
 {
-    Commands.Add(new DamageCommand(Attacker, Defender));
+    auto& AttackerStatus = Attacker->GetCurrentStatus();
+    auto& DefenderStatus = Defender->GetCurrentStatus();
+
+    int Damage = AttackerStatus.Strength - DefenderStatus.Defense;
+    
+    if (Damage <= 0)
+    {
+        return;
+    }
+
+    DefenderStatus.HealthPoint = DefenderStatus.HealthPoint - Damage;
+
+    if (DefenderStatus.HealthPoint <= 0)
+    {
+        Commands.Add(new DieCommand(Defender));
+    }
+    else
+    {
+        Commands.Add(new DamageCommand(Attacker, Defender));
+    }
 }
 
 void CommandUtility::DestroyCommand(CommandBase* Command)

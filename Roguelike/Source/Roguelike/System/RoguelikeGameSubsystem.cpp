@@ -89,6 +89,10 @@ void URoguelikeGameSubsystem::ExecuteTurnCommands(const TArray<class CommandBase
     {
         for (auto& Pawn : RoguelikePawns[index])
         {
+            // RoguelikePawns から削除されるタイミングは Pawn::EndPlay のため
+            // 既に倒されていても配列内に残っている場合があるので暫定対応
+            //check(Pawn->GetCurrentStatus().HealthPoint > 0);
+
             PawnParam Param(Pawn);
             PawnParams.Add(Param);
         }
@@ -141,7 +145,7 @@ void URoguelikeGameSubsystem::RemovePawn(class ARoguelikePawn* Pawn)
 {
     for (int index = 0; index < static_cast<size_t>(EFactions::Num); ++index)
     {
-        if (RoguelikePawns[index].Remove(Pawn) >= 0)
+        if (RoguelikePawns[index].Remove(Pawn) > 0)
         {
             break;
         }
