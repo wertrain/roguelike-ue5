@@ -119,8 +119,8 @@ void Dijkstra(const ARoguelikeMap& Map, const FIntPoint& Start, const FIntPoint&
 }
 
 URoguelikeMovementComponent::URoguelikeMovementComponent()
-	: MoveSpeed(20.0f)
-	, RotateSpeed(4.0f)
+	: MoveSpeed(10.0f)
+	, RotateSpeed(8.0f)
 	, Direction(EDirections::Down)
 	, RoguelikeMap(nullptr)
 	, CurrentPoint()
@@ -169,10 +169,12 @@ void URoguelikeMovementComponent::SetDirection(const EDirections NewDirection)
 {
 	Direction = NewDirection;
 
+#if true
 	if (APawn* const Pawn = GetPawnOwner())
 	{
 		Pawn->SetActorRotation(DirectionToRotator(Direction));
 	}
+#endif
 }
 
 FIntPoint URoguelikeMovementComponent::GetPoint() const
@@ -367,10 +369,12 @@ void URoguelikeMovementComponent::AddInputVector(FVector WorldVector, bool bForc
 		{
 			auto Location = Pawn->GetActorLocation();
 			Velocity = (WorldVector * MoveSpeed);
-			Location = Location + Velocity;
-			Pawn->SetActorLocation(Location);
+			Location = Location + Velocity;		
+			float percent = (NextLocation - Location).Length() / (NextLocation - CurrentLocation).Length();
 			FRotator MovementRotation = WorldVector.Rotation();
-			Pawn->SetActorRotation(FMath::RInterpTo(Pawn->GetActorRotation(), MovementRotation, GetWorld()->GetDeltaSeconds(), RotateSpeed));
+			//FRotator Rotator = FMath::RInterpTo(Pawn->GetActorRotation(), MovementRotation, GetWorld()->GetDeltaSeconds(), RotateSpeed);
+			FRotator Rotator = FMath::Lerp(Pawn->GetActorRotation(), MovementRotation, 1.0f - percent);
+			Pawn->SetActorLocationAndRotation(Location, Rotator);
 		}
 	}
 }
@@ -470,6 +474,22 @@ void URoguelikeMovementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 			Velocity = FMath::Lerp(Velocity, FVector::ZeroVector, 1.0f - VelocityTimer);
 		}
 	}
+
+#if false
+	if (APawn* const Pawn = GetPawnOwner())
+	{
+		auto ExpectDirection = RotatorToDirection(Pawn->GetActorRotation());
+		if (Direction != ExpectDirection)
+		{
+			auto MovementRotation = DirectionToRotator(Direction);
+			Pawn->SetActorRotation(FMath::RInterpTo(Pawn->GetActorRotation(), MovementRotation, GetWorld()->GetDeltaSeconds(), RotateSpeed));
+		}
+		else
+		{
+			Pawn->SetActorRotation(DirectionToRotator(Direction));
+		}
+	}
+#endif
 }
 
 EDirections URoguelikeMovementComponent::RotatorToDirection(const FRotator& Rotator) const
@@ -479,7 +499,7 @@ EDirections URoguelikeMovementComponent::RotatorToDirection(const FRotator& Rota
 	constexpr const double RIGHT = 90.0;
 	constexpr const double DOWN_RIGHT = 135.0;
 	constexpr const double DOWN = 180.0;
-	constexpr const double RANGE = 15.0;
+	constexpr const double RANGE = 5.0;
 
 	if (Rotator.Yaw >= (UP - RANGE) && Rotator.Yaw < (UP + RANGE))
 		return EDirections::Up;
