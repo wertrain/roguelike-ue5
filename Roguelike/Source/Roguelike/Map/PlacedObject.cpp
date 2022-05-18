@@ -7,7 +7,7 @@ APlacedObject::APlacedObject()
     : RoguelikeMap(nullptr)
     , CurrentPoint()
 {
-
+    PrimaryActorTick.bCanEverTick = false;
 }
 
 void APlacedObject::SetRoguelikeMap(class ARoguelikeMap* Map)
