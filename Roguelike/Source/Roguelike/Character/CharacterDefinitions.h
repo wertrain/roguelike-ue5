@@ -20,7 +20,7 @@ enum class EDirections : uint8
 {
     Up UMETA(DisplayName = "Up"),
     UpRight UMETA(DisplayName = "UpRight"),
-    Right UMETA(DisplayName = "UpRight"),
+    Right UMETA(DisplayName = "Right"),
     DownRight UMETA(DisplayName = "DownRight"),
     Down UMETA(DisplayName = "Down"),
     DownLeft UMETA(DisplayName = "DownLeft"),

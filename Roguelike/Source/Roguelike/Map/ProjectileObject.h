@@ -10,15 +10,32 @@
 UCLASS()
 class ROGUELIKE_API AProjectileObject : public AActor
 {
-	GENERATED_BODY()	
+	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Map|Projectile")
+	uint8 bPenetrating : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Map|Projectile")
+	float Speed;
+
 	AProjectileObject();
+
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map|Projectile")
 	void SetRoguelikeMap(class ARoguelikeMap* RoguelikeMap);
-	void Fire(const FIntPoint& Point, const EDirections Direction);
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Map|Projectile")
+	void Fire(const FVector Start, const FVector Target);
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	class ARoguelikeMap* RoguelikeMap;
 	FIntPoint StartPoint;
 	EDirections FireDirection;
+	FVector TargetLocation;
+	FVector VectorDirection;
 };

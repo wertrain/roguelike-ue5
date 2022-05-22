@@ -10,9 +10,12 @@
 #include "Engine/World.h"
 
 #include "Map/RoguelikeMap.h"
+#include "Map/ProjectileObject.h"
 #include "Map/MapDefinitions.h"
+#include "Roguelike/Map/ProjectileObject.h"
 #include "Roguelike/Character/RoguelikePawn.h"
 #include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
+#include "Roguelike/Character/Skill/SkillFireBall.h"
 #include "Roguelike/System/RoguelikeGameSubsystem.h"
 #include "Roguelike/System/Command/CommandUtility.h"
 
@@ -80,7 +83,7 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 	UGameInstance* GameInstance = GetGameInstance();
 	URoguelikeGameSubsystem* RoguelikeGameSubsystem = GameInstance->GetSubsystem<URoguelikeGameSubsystem>();
 
-	if (RoguelikeGameSubsystem->IsPlayerTurn() && (bMoveLeft || bMoveRight || bMoveUp || bMoveDown || bButtonDown))
+	if (RoguelikeGameSubsystem->IsPlayerTurn() && (bMoveLeft || bMoveRight || bMoveUp || bMoveDown || bButtonDown || bButtonRight))
 	{
 		if (ARoguelikePawn* const MyPawn = Cast<ARoguelikePawn>(GetPawn()))
 		{
@@ -167,7 +170,16 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 					}
 					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
 				}
+				else if (bButtonRight)
+				{
+					auto* Skill = new SkillFireBall();
 
+					TArray<CommandBase*> Commands;
+					CommandUtility::CreateProjectileCommand(Commands, MyPawn, Skill->GetSkillClass());
+					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
+
+					delete Skill;
+				}
 			}
 		}
 	}
@@ -189,6 +201,8 @@ void ARoguelikePlayerController::SetupInputComponent()
 	InputComponent->BindAction("CursorRight", IE_Released, this, &ARoguelikePlayerController::OnReleasedRight);
 	InputComponent->BindAction("ButtonLeft", IE_Pressed, this, &ARoguelikePlayerController::OnPressedButtonLeft);
 	InputComponent->BindAction("ButtonLeft", IE_Released, this, &ARoguelikePlayerController::OnReleasedButtonLeft);
+	InputComponent->BindAction("ButtonRight", IE_Pressed, this, &ARoguelikePlayerController::OnPressedButtonRight);
+	InputComponent->BindAction("ButtonRight", IE_Released, this, &ARoguelikePlayerController::OnReleasedButtonRight);
 	InputComponent->BindAction("ButtonDown", IE_Pressed, this, &ARoguelikePlayerController::OnPressedButtonDown);
 	InputComponent->BindAction("ButtonDown", IE_Released, this, &ARoguelikePlayerController::OnReleasedButtonDown);
 
@@ -204,13 +218,17 @@ void ARoguelikePlayerController::OnPressedUp() { bMoveUp = true; }
 void ARoguelikePlayerController::OnPressedDown() { bMoveDown = true; }
 void ARoguelikePlayerController::OnPressedLeft() { bMoveLeft = true; }
 void ARoguelikePlayerController::OnPressedRight() { bMoveRight = true; }
+void ARoguelikePlayerController::OnPressedButtonUp() { bButtonUp = true; }
 void ARoguelikePlayerController::OnPressedButtonLeft() { bButtonLeft = true; }
+void ARoguelikePlayerController::OnPressedButtonRight() { bButtonRight = true; }
 void ARoguelikePlayerController::OnPressedButtonDown() { bButtonDown = true; }
 void ARoguelikePlayerController::OnReleasedUp() { bMoveUp = false; }
 void ARoguelikePlayerController::OnReleasedDown() { bMoveDown = false; }
 void ARoguelikePlayerController::OnReleasedLeft() { bMoveLeft = false; }
 void ARoguelikePlayerController::OnReleasedRight() { bMoveRight = false; }
+void ARoguelikePlayerController::OnReleasedButtonUp() { bButtonUp = false; }
 void ARoguelikePlayerController::OnReleasedButtonLeft() { bButtonLeft = false; }
+void ARoguelikePlayerController::OnReleasedButtonRight() { bButtonRight = false; }
 void ARoguelikePlayerController::OnReleasedButtonDown() { bButtonDown = false; }
 
 void ARoguelikePlayerController::OnSetDestinationPressed()

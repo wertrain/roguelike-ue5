@@ -33,8 +33,10 @@ protected:
 	uint32 bMoveDown : 1;
 	uint32 bMoveLeft : 1;
 	uint32 bMoveRight : 1;
-	uint32 bButtonLeft : 1;
+	uint32 bButtonUp : 1;
 	uint32 bButtonDown : 1;
+	uint32 bButtonLeft : 1;
+	uint32 bButtonRight : 1;
 
 	// Begin PlayerController interface
 	virtual void PlayerTick(float DeltaTime) override;
@@ -46,13 +48,17 @@ protected:
 	void OnPressedDown();
 	void OnPressedLeft();
 	void OnPressedRight();
+	void OnPressedButtonUp();
 	void OnPressedButtonLeft();
+	void OnPressedButtonRight();
 	void OnPressedButtonDown();
 	void OnReleasedUp();
 	void OnReleasedDown();
 	void OnReleasedLeft();
 	void OnReleasedRight();
+	void OnReleasedButtonUp();
 	void OnReleasedButtonLeft();
+	void OnReleasedButtonRight();
 	void OnReleasedButtonDown();
 
 	void OnSetDestinationPressed();
