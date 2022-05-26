@@ -13,6 +13,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SkeletalMeshComponent.h"
 
+#include "Roguelike/Character/Skill/SkillFireBall.h"
+
 // Sets default values
 ARoguelikePawn::ARoguelikePawn()
 	: PlayerIndex(-1)
@@ -26,6 +28,8 @@ ARoguelikePawn::ARoguelikePawn()
 	RoguelikeMovementComponent = CreateDefaultSubobject<URoguelikeMovementComponent>(TEXT("RoguelikeMovementComponent"));
 	//GridMovementComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	//TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	FireBall = new SkillFireBall();
 }
 
 // Called when the game starts or when spawned

@@ -82,7 +82,7 @@ void CommandUtility::CreateProjectileCommand(TArray<class CommandBase*>& Command
 		return false;
 	};
 
-	const FIntPoint StartPoint = MovementComponent->GetNextPoint();
+	const FIntPoint StartPoint = MovementComponent->GetFrontPoint();
 	FIntPoint TargetPoint = StartPoint;
 	switch (MovementComponent->Direction)
 	{
@@ -98,7 +98,7 @@ void CommandUtility::CreateProjectileCommand(TArray<class CommandBase*>& Command
 		break;
 
 	case EDirections::Down:
-		for (int32 Y = 0; Y < MapHeight; ++Y)
+		for (int32 Y = StartPoint.Y; Y < MapHeight; ++Y)
 		{
 			if (IsHit(StartPoint.X, Y))
 			{
