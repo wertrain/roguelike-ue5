@@ -18,6 +18,7 @@
 #include "Roguelike/Character/Skill/SkillFireBall.h"
 #include "Roguelike/System/RoguelikeGameSubsystem.h"
 #include "Roguelike/System/Command/CommandUtility.h"
+#include "Roguelike/System/Resource/GameResourceManager.h"
 
 ARoguelikePlayerController::ARoguelikePlayerController()
 {
@@ -172,13 +173,10 @@ void ARoguelikePlayerController::PlayerTick(float DeltaTime)
 				}
 				else if (bButtonRight)
 				{
-					auto* Skill = new SkillFireBall();
-
 					TArray<CommandBase*> Commands;
-					CommandUtility::CreateProjectileCommand(Commands, MyPawn, Skill->GetSkillClass());
+					CommandUtility::CreateProjectileCommand(Commands, MyPawn, 
+						RoguelikeGameSubsystem->GetResourceManager()->ProjectileFireClass.Get());
 					RoguelikeGameSubsystem->ExecuteTurnCommands(Commands);
-
-					delete Skill;
 				}
 			}
 		}

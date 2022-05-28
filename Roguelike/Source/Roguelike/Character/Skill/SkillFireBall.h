@@ -4,9 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Roguelike/Character/Skill/Skill.h"
+#include "Roguelike/System/Resource/GameResources.h"
 
 class SkillFireBall : Skill
 {
+public:
+    GAME_RESOURCES();
+
 public:
     SkillFireBall();
 

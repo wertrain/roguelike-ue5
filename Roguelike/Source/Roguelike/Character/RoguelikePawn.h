@@ -42,8 +42,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	class SkillFireBall* GetSkill() { return FireBall; }
-
 public:
 	class UCharacterAnimInstance* GetAnimInstance() const;
 	FCharacterStatus& GetCurrentStatus();
@@ -54,6 +52,4 @@ private:
 	class URoguelikeMovementComponent* RoguelikeMovementComponent;
 
 	FCharacterStatus CurrentStatus;
-
-	class SkillFireBall* FireBall;
 };

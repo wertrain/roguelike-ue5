@@ -5,6 +5,7 @@
 
 #include "Roguelike/System/AI/AI.h"
 #include "Roguelike/System/Command/CommandBase.h"
+#include "Roguelike/System/Resource/GameResourceManager.h"
 #include "Roguelike/Character/RoguelikePawn.h"
 #include "Roguelike/Character/CharacterStatus.h"
 #include "Kismet/GameplayStatics.h"
@@ -155,4 +156,15 @@ void URoguelikeGameSubsystem::RemovePawn(class ARoguelikePawn* Pawn)
 void URoguelikeGameSubsystem::RemovePawn(const EFactions Faction, class ARoguelikePawn* Pawn)
 {
     RoguelikePawns[static_cast<size_t>(Faction)].Remove(Pawn);
+}
+
+void URoguelikeGameSubsystem::SetResourceManager(AGameResourceManager* Manager)
+{
+    ResourceManager = Manager;
+    check(ResourceManager != nullptr);
+}
+
+AGameResourceManager* URoguelikeGameSubsystem::GetResourceManager() const
+{
+    return ResourceManager;
 }

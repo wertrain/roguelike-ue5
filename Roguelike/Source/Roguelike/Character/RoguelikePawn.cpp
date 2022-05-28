@@ -28,8 +28,6 @@ ARoguelikePawn::ARoguelikePawn()
 	RoguelikeMovementComponent = CreateDefaultSubobject<URoguelikeMovementComponent>(TEXT("RoguelikeMovementComponent"));
 	//GridMovementComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	//TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	FireBall = new SkillFireBall();
 }
 
 // Called when the game starts or when spawned

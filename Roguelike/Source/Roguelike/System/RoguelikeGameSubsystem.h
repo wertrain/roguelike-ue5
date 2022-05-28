@@ -33,6 +33,8 @@ public:
 	void AddPawn(const EFactions Faction, class ARoguelikePawn* Pawn);
 	void RemovePawn(class ARoguelikePawn* Pawn);
 	void RemovePawn(const EFactions Faction, class ARoguelikePawn* Pawn);
+	void SetResourceManager(class AGameResourceManager* Manager);
+	class AGameResourceManager* GetResourceManager() const;
 
 private:
 	union GameStates
@@ -50,4 +52,5 @@ private:
 	TArray<class ARoguelikePawn*> RoguelikePawns[static_cast<size_t>(EFactions::Num)];
 	CommandQueue Commands;
 	TQueue<class ARoguelikePawn*> WaitingForActionQueue;
+	class AGameResourceManager* ResourceManager;
 };
