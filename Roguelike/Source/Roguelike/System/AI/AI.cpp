@@ -69,7 +69,6 @@ void AI::CreateCommands(URoguelikeGameSubsystem* RoguelikeGameSubsystem, ARoguel
         if (CheckNeighbor(Point, TargetPoint))
         {
             CommandUtility::CreateAttackCommand(Commands, Pawn);
-            CommandUtility::CreateDamageCommand(Commands, Pawn, Player);
         }
         else
         {

@@ -39,8 +39,18 @@ public:
 	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe), Category = "Roguelike|Character")
 	bool GetAnimationFlag(const ECharacterAnimationFlag Flag) const;
 
+	// アニメーションモンタージュ用の通知を伝える
+	// これを呼び出さないと WaitNotificationAnimMontage / IsNotifyAnimMontage が動作しないので注意
+	UFUNCTION(BlueprintCallable, Category = "Roguelike|Character")
+	void NotifyAnimMontage(const ECharacterAnimMontageFlag Flag);
+
 	bool PlayAnimMontage(const ECharacterAnimMontageFlag Flag);
-	bool IsPlayingAnimMontage(const ECharacterAnimMontageFlag Flag);
+	bool IsPlayingAnimMontage(const ECharacterAnimMontageFlag Flag) const;
+
+	// アニメーションモンタージュからの通知を待つ
+	bool WaitNotificationAnimMontage(const ECharacterAnimMontageFlag Flag);
+	// アニメーションモンタージュからの通知が来たかをチェックする
+	bool IsNotifyAnimMontage(const ECharacterAnimMontageFlag Flag);
 
 	// 次のステートを監視する
 	bool WatchNextState();
@@ -60,6 +70,7 @@ private:
 	};
 
 	class ICharacterAnimator* CharacterAnimator;
-	bool AnimationFlag[static_cast<size_t>(ECharacterAnimationFlag::Num)];
+	bool AnimationFlags[static_cast<size_t>(ECharacterAnimationFlag::Num)];
 	EWatchStateFlag WatchStateFlag;
+	EWatchStateFlag WatchAnimMontageFlags[static_cast<size_t>(ECharacterAnimMontageFlag::Num)];
 };

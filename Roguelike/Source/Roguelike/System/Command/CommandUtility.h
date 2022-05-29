@@ -12,8 +12,10 @@ class CommandUtility
 public:
 	static void CreateMovementCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Pawn, const FIntPoint& Point);
 	static void CreateAttackCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker);
+	static void CreateAttackCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker, TArray<class ARoguelikePawn*>& Defender);
 	static void CreateProjectileCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker, TSubclassOf<class AProjectileObject> ProjectileObjectClass);
 	static void CreateDamageCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker, class ARoguelikePawn* Defender);
+	static void CreateDamageCommand(TArray<class CommandBase*>& Commands, int32 Damage, class ARoguelikePawn* Defender);
 	static void DestroyCommand(class CommandBase* Command);
 
 private:

@@ -7,6 +7,7 @@
 #include "Roguelike/System/Command/DieCommand.h"
 #include "Roguelike/System/Command/ItemGetCommand.h"
 #include "Roguelike/System/Command/AttackCommand.h"
+#include "Roguelike/System/Command/MontagePlayCommand.h"
 #include "Roguelike/System/Command/ProjectileCommand.h"
 #include "Roguelike/Character/RoguelikePawn.h"
 #include "Roguelike/Character/Component/RoguelikeMovementComponent.h"
@@ -44,7 +45,30 @@ void CommandUtility::CreateMovementCommand(TArray<CommandBase*>& Commands, ARogu
 
 void CommandUtility::CreateAttackCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker)
 {
-	Commands.Add(new AttackCommand(Attacker));
+	Commands.Add(new MontagePlayCommand(Attacker, ECharacterAnimMontageFlag::Attack));
+
+	auto* MovementComponent = Attacker->GetRoguelikeMovementComponent();
+	auto* RoguelikeMap = MovementComponent->GetRoguelikeMap();
+
+	const auto& FrontPoint = MovementComponent->GetFrontPoint();
+	if (auto* DamagedPawn = RoguelikeMap->GetRoguelikePawn(FrontPoint.X, FrontPoint.Y))
+	{
+		// 自分と異なる勢力であればダメージを与える
+		if (DamagedPawn->GetCurrentStatus().Faction != Attacker->GetCurrentStatus().Faction)
+		{
+			CommandUtility::CreateDamageCommand(Commands, Attacker, DamagedPawn);
+		}
+	}
+}
+
+void CommandUtility::CreateAttackCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker, TArray<class ARoguelikePawn*>& Defender)
+{
+	Commands.Add(new MontagePlayCommand(Attacker, ECharacterAnimMontageFlag::Attack));
+
+	for (auto* DamagedPawn : Defender)
+	{
+		CommandUtility::CreateDamageCommand(Commands, Attacker, DamagedPawn);
+	}
 }
 
 void CommandUtility::CreateProjectileCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker, TSubclassOf<class AProjectileObject> ProjectileObjectClass)
@@ -131,7 +155,20 @@ void CommandUtility::CreateProjectileCommand(TArray<class CommandBase*>& Command
 		break;
 	}
 
+	Commands.Add(new MontagePlayCommand(Attacker, ECharacterAnimMontageFlag::FireProjectile));
+
 	Commands.Add(new ProjectileCommand(Attacker, ProjectileObjectClass, RoguelikeMap->GetLocationOnGrid(TargetPoint.X, TargetPoint.Y)));
+
+	for (auto Pawn : Pawns)
+	{
+		ARoguelikePawn* DamagedPawn = Cast<ARoguelikePawn>(Pawn);
+		
+		// 自分と異なる勢力であればダメージを与える
+		//if (DamagedPawn->GetCurrentStatus().Faction != Attacker->GetCurrentStatus().Faction)
+		{
+			CommandUtility::CreateDamageCommand(Commands, 50, DamagedPawn);
+		}
+	}
 }
 
 void CommandUtility::CreateDamageCommand(TArray<class CommandBase*>& Commands, class ARoguelikePawn* Attacker, class ARoguelikePawn* Defender)
@@ -155,6 +192,27 @@ void CommandUtility::CreateDamageCommand(TArray<class CommandBase*>& Commands, c
 	else
 	{
 		Commands.Add(new DamageCommand(Attacker, Defender));
+	}
+}
+
+void CommandUtility::CreateDamageCommand(TArray<class CommandBase*>& Commands, const int32 Damage, class ARoguelikePawn* Defender)
+{
+	auto& DefenderStatus = Defender->GetCurrentStatus();
+
+	if (Damage <= 0)
+	{
+		return;
+	}
+
+	DefenderStatus.HealthPoint = DefenderStatus.HealthPoint - Damage;
+
+	if (DefenderStatus.HealthPoint <= 0)
+	{
+		Commands.Add(new DieCommand(Defender));
+	}
+	else
+	{
+		Commands.Add(new MontagePlayCommand(Defender, ECharacterAnimMontageFlag::Damage));
 	}
 }
 

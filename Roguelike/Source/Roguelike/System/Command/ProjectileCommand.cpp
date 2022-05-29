@@ -24,12 +24,19 @@ ProjectileCommand::~ProjectileCommand()
 
 void ProjectileCommand::Execute()
 {
-    if (UCharacterAnimInstance* AnimInstance = AttackerPawn->GetAnimInstance())
-    {
-        AnimInstance->PlayAnimMontage(ECharacterAnimMontageFlag::FireProjectile);
-    }
+    //if (UCharacterAnimInstance* AnimInstance = AttackerPawn->GetAnimInstance())
+    //{
+    //    AnimInstance->PlayAnimMontage(ECharacterAnimMontageFlag::FireProjectile);
+    //}
 
     auto Location = AttackerPawn->GetActorLocation();
+    if (USkeletalMeshComponent* SceneComponent = Cast<USkeletalMeshComponent>(AttackerPawn->GetComponentByClass(USkeletalMeshComponent::StaticClass())))
+    {
+        if (SceneComponent->DoesSocketExist("FireProjectileSocket"))
+        {
+            Location = SceneComponent->GetSocketLocation("FireProjectileSocket");
+        }
+    }
     ProjectileObject = Cast<AProjectileObject>(AttackerPawn->GetWorld()->
         SpawnActor(ProjectileObjectClass, &Location));
     ProjectileObject->Fire(Location, TargetLocation);
