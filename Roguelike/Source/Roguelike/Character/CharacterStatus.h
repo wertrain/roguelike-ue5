@@ -51,7 +51,7 @@ struct FCharacterData : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName Name;
+	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FCharacterStatus Status;
