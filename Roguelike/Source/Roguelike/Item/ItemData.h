@@ -35,22 +35,3 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText Summary;
 };
-
-UENUM(Blueprintable)
-enum class EEquipmentTypes : uint8
-{
-	RightHand UMETA(DisplayName = "RightHand"),
-	LeftHand UMETA(DisplayName = "LeftHand"),
-	Accessory UMETA(DisplayName = "Accessory"),
-	Num UMETA(Hidden)
-};
-
-USTRUCT(BlueprintType)
-struct FEquipmentData : public FItemData
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EEquipmentTypes EquipmentType;
-};
