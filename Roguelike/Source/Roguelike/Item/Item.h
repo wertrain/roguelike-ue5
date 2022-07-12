@@ -18,14 +18,14 @@ enum class EEquipmentStatus : uint8
 UCLASS(BlueprintType)
 class UItem : public UObject
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EEquipmentStatus EquipmentStatus;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FItemData OriginalData;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FItemData OriginalData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FEquipmentData OriginalEquipmentData;
