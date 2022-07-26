@@ -21,6 +21,9 @@ class UItem : public UObject
 	GENERATED_BODY()
 
 public:
+	//const FItemData* GetData() const;
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EEquipmentStatus EquipmentStatus;
 
