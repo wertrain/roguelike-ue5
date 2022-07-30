@@ -21,15 +21,17 @@ class UItem : public UObject
 	GENERATED_BODY()
 
 public:
-	//const FItemData* GetData() const;
+	FItemData* GetItemData();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EEquipmentStatus EquipmentStatus;
+	int32 EquipmentStatus;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FItemData OriginalData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FEquipmentData OriginalEquipmentData;
+
+	FItemData TestData;
 };
