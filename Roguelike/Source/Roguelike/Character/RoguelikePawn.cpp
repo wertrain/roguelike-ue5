@@ -30,6 +30,7 @@ ARoguelikePawn::ARoguelikePawn()
 	//TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	ItemList = NewObject<UItemList>();
+	Equipments = NewObject<UItemEquipments>();
 }
 
 // Called when the game starts or when spawned

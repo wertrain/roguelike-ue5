@@ -8,6 +8,7 @@
 #include "Roguelike/Character/CharacterStatus.h"
 #include "Roguelike/Character/CharacterAnimator.h"
 #include "Roguelike/Item/ItemList.h"
+#include "Roguelike/Item/ItemEquipments.h"
 #include "RoguelikePawn.generated.h"
 
 UCLASS()
@@ -30,6 +31,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character")
 	UItemList* ItemList;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roguelike|Character")
+	UItemEquipments* Equipments;
 
 	/** Returns GridMovementComponent subobject */
 	FORCEINLINE class URoguelikeMovementComponent* GetRoguelikeMovementComponent() const { return RoguelikeMovementComponent; }

@@ -14,7 +14,8 @@ class UItemEquipments : public UObject
     GENERATED_BODY()
 
 public:
-    bool Equip(const EEquipmentTypes Type, UItem* Item);
+    void Equip(const EEquipmentTypes Type, UItem* Item);
+    void Unequip(const EEquipmentTypes Type);
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

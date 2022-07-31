@@ -3,26 +3,41 @@
 #include "Roguelike/Item/ItemEquipments.h"
 #include "Utility/EnumBitset.h"
 
-bool UItemEquipments::Equip(const EEquipmentTypes Type, UItem* TargetItem)
+void UItemEquipments::Equip(const EEquipmentTypes Type, UItem* TargetItem)
 {
-    // ‘•”õ’†‚Ì‚à‚Ì‚ðŠm”F
-    for (UItem* Item : SourceItemList->Items)
-    {
-
-    }
-
     auto* ItemData = static_cast<FEquipmentData*>(TargetItem->GetItemData());
 
-    if (ItemData->EquipmentType == EEquipmentTypes::RightHand)
+    UItem* PrevEquipment = nullptr;
+
+    switch (ItemData->EquipmentType)
     {
-        if (RightHand != nullptr)
-        {
-            if (EnumBitset<EEquipmentStatus>::IsOn(RightHand->EquipmentStatus, EEquipmentStatus::Equipped))
-            {
-                EnumBitset<EEquipmentStatus>::Off(RightHand->EquipmentStatus, EEquipmentStatus::Equipped);
-            }
-        }
+    case EEquipmentTypes::RightHand:
+        PrevEquipment = RightHand;
+        RightHand = TargetItem;
+        break;
+    case EEquipmentTypes::LeftHand:
+        PrevEquipment = LeftHand;
+        LeftHand = TargetItem;
+        break;
+    case EEquipmentTypes::Accessory:
+        PrevEquipment = Accessory;
+        Accessory = TargetItem;
+        break;
     }
 
-    return true;
+    if (PrevEquipment)
+    {
+        EnumBitset<EEquipmentStatus>::Off(PrevEquipment->EquipmentStatus, EEquipmentStatus::Equipped);
+    }
+
+    if (TargetItem)
+    {
+        EnumBitset<EEquipmentStatus>::On(TargetItem->EquipmentStatus, EEquipmentStatus::Equipped);
+    }
+
+}
+
+void UItemEquipments::Unequip(const EEquipmentTypes Type)
+{
+    Equip(Type, nullptr);
 }
